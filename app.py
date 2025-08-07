@@ -74,35 +74,21 @@ class RealGASMInterface:
         self.tokenizer = None
         self.last_gasm_results = None  # Store last results for visualization
         
-        # Domain-specific semantic categories for filtering
-        self.semantic_categories = {
-            'physical_objects': {
-                'furniture': ['table', 'chair', 'desk', 'shelf', 'bed', 'sofa', 'cabinet'],
-                'devices': ['computer', 'keyboard', 'monitor', 'screen', 'mouse', 'laptop', 'phone', 'tablet', 'printer', 'scanner', 'camera', 'speaker'],
-                'tools': ['hammer', 'screwdriver', 'wrench', 'drill', 'saw', 'knife'],
-                'containers': ['box', 'bag', 'bottle', 'cup', 'bowl', 'jar', 'basket'],
-                'vehicles': ['car', 'truck', 'bus', 'train', 'plane', 'boat', 'bicycle'],
-                'sports': ['ball', 'bat', 'racket', 'stick', 'net', 'goal']
-            },
-            'technical_objects': {
-                'robotics': ['robot', 'arm', 'sensor', 'motor', 'actuator', 'controller', 'manipulator', 'gripper', 'joint'],
-                'scientific': ['detector', 'microscope', 'telescope', 'spectrometer', 'analyzer', 'probe', 'scanner'],
-                'industrial': ['reactor', 'turbine', 'compressor', 'pump', 'valve', 'conveyor', 'assembly', 'platform', 
-                             'machine', 'equipment', 'apparatus', 'device', 'unit', 'system', 'installation',
-                             'sorting', 'sorter', 'belt', 'line', 'station', 'workstation', 'cell'],
-                'electronic': ['circuit', 'processor', 'memory', 'display', 'antenna', 'battery', 'capacitor']
-            },
-            'spatial_objects': {
-                'architectural': ['room', 'door', 'window', 'wall', 'floor', 'ceiling', 'corner'],
-                'locations': ['center', 'side', 'edge', 'surface', 'space', 'area', 'zone', 'place', 'position', 'spot'],
-                'natural': ['tree', 'rock', 'river', 'mountain', 'field', 'forest', 'lake']
-            },
-            'scientific_entities': {
-                'physics': ['atom', 'electron', 'proton', 'neutron', 'photon', 'molecule', 'particle'],
-                'chemistry': ['crystal', 'compound', 'solution', 'reaction', 'catalyst', 'polymer'],
-                'astronomy': ['satellite', 'planet', 'star', 'galaxy', 'comet', 'asteroid', 'orbit']
-            }
+        # Semantic prototype words for dynamic classification using word vectors
+        self.semantic_prototypes = {
+            'industrial': ['machine', 'equipment', 'factory', 'production', 'assembly', 'manufacturing'],
+            'robotic': ['robot', 'automation', 'mechanical', 'actuator', 'control', 'artificial'],
+            'scientific': ['research', 'analysis', 'measurement', 'laboratory', 'experiment', 'detection'],
+            'physical': ['object', 'material', 'substance', 'physical', 'tangible', 'solid'],
+            'spatial': ['location', 'position', 'space', 'area', 'place', 'region'],
+            'electronic': ['digital', 'electronic', 'circuit', 'computer', 'technology', 'device'],
+            'furniture': ['furniture', 'seating', 'desk', 'storage', 'household', 'interior'],
+            'tool': ['tool', 'instrument', 'implement', 'equipment', 'utility', 'apparatus'],
+            'vehicle': ['transportation', 'vehicle', 'travel', 'mobility', 'transport', 'automotive']
         }
+        
+        # Similarity threshold for classification
+        self.similarity_threshold = 0.6
         
         # Fallback patterns for when spaCy is not available
         self.fallback_entity_patterns = [
@@ -250,18 +236,36 @@ class RealGASMInterface:
         return self._is_in_semantic_categories(text)
     
     def _is_in_semantic_categories(self, entity: str) -> bool:
-        """Check if entity belongs to any of our semantic categories"""
-        entity_lower = entity.lower().strip()
-        
-        for category, subcategories in self.semantic_categories.items():
-            for subcategory, items in subcategories.items():
-                if entity_lower in items:
-                    return True
-                # Also check for partial matches for compound words
-                for item in items:
-                    if item in entity_lower or entity_lower in item:
+        """Check if entity belongs to any semantic category using vector similarity"""
+        if not SPACY_AVAILABLE or not nlp:
+            # Fallback to simple pattern matching
+            entity_lower = entity.lower().strip()
+            # Check against all prototype words
+            for category, prototypes in self.semantic_prototypes.items():
+                for prototype in prototypes:
+                    if prototype in entity_lower or entity_lower in prototype:
                         return True
-        return False
+            return False
+        
+        try:
+            entity_doc = nlp(entity.lower().strip())
+            if not entity_doc.has_vector:
+                return False
+            
+            # Check similarity with any category
+            for category, prototypes in self.semantic_prototypes.items():
+                for prototype in prototypes:
+                    prototype_doc = nlp(prototype)
+                    if prototype_doc.has_vector:
+                        similarity = self._cosine_similarity(entity_doc.vector, prototype_doc.vector)
+                        if similarity > self.similarity_threshold:
+                            return True
+            
+            return False
+            
+        except Exception as e:
+            logger.warning(f"Semantic category check failed for '{entity}': {e}")
+            return False
     
     def _filter_entities_semantically(self, entities: List[str]) -> List[str]:
         """Filter entities based on semantic relevance"""
@@ -688,12 +692,13 @@ class RealGASMInterface:
                     logger.warning(f"Consistency verification failed: {consistency_error}")
                     consistency_results = {'warning': 'verification_failed'}
                 
-                # Create entity data with real GASM positions
+                # Create entity data with real GASM positions using contextual classification
+                entity_names = [str(e) for e in entities[:len(final_positions)]]
                 real_entities = []
-                for i, entity in enumerate(entities[:len(final_positions)]):
+                for i, entity in enumerate(entity_names):
                     real_entities.append({
                         'name': entity,
-                        'type': self.classify_entity_type(entity),
+                        'type': self.classify_entity_type(entity, entity_names),
                         'position': final_positions[i].tolist(),
                         'confidence': 0.95  # High confidence for real GASM results
                     })
@@ -718,43 +723,129 @@ class RealGASMInterface:
             logger.error(f"Real GASM forward pass failed: {e}")
             raise e
 
-    def classify_entity_type(self, entity: str) -> str:
-        """Classify entity type based on semantic content"""
+    def classify_entity_type_semantic(self, entity: str) -> str:
+        """Classify entity type using semantic similarity with spaCy vectors"""
+        if not SPACY_AVAILABLE or not nlp:
+            return self.classify_entity_type_fallback(entity)
+        
+        try:
+            # Get entity vector
+            entity_doc = nlp(entity.lower())
+            if not entity_doc.has_vector:
+                return self.classify_entity_type_fallback(entity)
+            
+            entity_vector = entity_doc.vector
+            
+            best_category = 'unknown'
+            best_similarity = 0.0
+            
+            # Compare with each category prototype
+            for category, prototypes in self.semantic_prototypes.items():
+                category_similarities = []
+                
+                for prototype in prototypes:
+                    prototype_doc = nlp(prototype)
+                    if prototype_doc.has_vector:
+                        # Calculate cosine similarity
+                        similarity = self._cosine_similarity(entity_vector, prototype_doc.vector)
+                        category_similarities.append(similarity)
+                
+                # Use average similarity for this category
+                if category_similarities:
+                    avg_similarity = sum(category_similarities) / len(category_similarities)
+                    if avg_similarity > best_similarity and avg_similarity > self.similarity_threshold:
+                        best_similarity = avg_similarity
+                        best_category = category
+            
+            return best_category
+            
+        except Exception as e:
+            logger.warning(f"Semantic classification failed for '{entity}': {e}")
+            return self.classify_entity_type_fallback(entity)
+
+    def classify_entity_type_contextual(self, entity: str, context_entities: List[str]) -> str:
+        """Enhanced classification using context from other entities"""
+        if not SPACY_AVAILABLE or not nlp:
+            return self.classify_entity_type_semantic(entity)
+        
+        try:
+            # Get base classification
+            base_type = self.classify_entity_type_semantic(entity)
+            
+            # If we got a good classification, use it
+            if base_type != 'unknown':
+                return base_type
+            
+            # Try context-based classification
+            entity_doc = nlp(entity.lower())
+            if not entity_doc.has_vector:
+                return base_type
+            
+            # Look for semantic relationships with context entities
+            context_types = []
+            for context_entity in context_entities:
+                if context_entity != entity:
+                    context_type = self.classify_entity_type_semantic(context_entity)
+                    if context_type != 'unknown':
+                        context_types.append(context_type)
+            
+            # If surrounded by industrial terms, likely industrial
+            if context_types:
+                most_common_type = max(set(context_types), key=context_types.count)
+                
+                # Check if entity is semantically related to the dominant context
+                context_doc = nlp(' '.join([t for t in context_entities if t != entity]))
+                if context_doc.has_vector:
+                    similarity = self._cosine_similarity(entity_doc.vector, context_doc.vector)
+                    if similarity > 0.5:  # Lower threshold for context
+                        return most_common_type
+            
+            return base_type
+            
+        except Exception as e:
+            logger.warning(f"Contextual classification failed for '{entity}': {e}")
+            return self.classify_entity_type_semantic(entity)
+
+    def classify_entity_type_fallback(self, entity: str) -> str:
+        """Fallback classification when spaCy is not available"""
         entity_lower = entity.lower()
         
-        # Use the semantic categories for precise classification
-        for category, subcategories in self.semantic_categories.items():
-            for subcategory, items in subcategories.items():
-                if entity_lower in items:
-                    if category == 'technical_objects':
-                        if subcategory == 'robotics':
-                            return 'robotic'
-                        elif subcategory == 'industrial':
-                            return 'industrial'
-                        elif subcategory == 'scientific':
-                            return 'scientific'
-                        else:
-                            return 'technical'
-                    elif category == 'physical_objects':
-                        return 'physical'
-                    elif category == 'spatial_objects':
-                        return 'spatial'
-                    elif category == 'scientific_entities':
-                        return 'scientific'
-        
-        # Fallback patterns for backwards compatibility
-        if any(word in entity_lower for word in ['robot', 'arm', 'sensor', 'motor']):
+        # Simple pattern matching as fallback
+        if any(word in entity_lower for word in ['robot', 'arm', 'sensor', 'motor', 'actuator']):
             return 'robotic'
-        elif any(word in entity_lower for word in ['conveyor', 'machine', 'equipment', 'system']):
-            return 'industrial'
-        elif any(word in entity_lower for word in ['atom', 'electron', 'molecule', 'crystal', 'particle']):
+        elif any(word in entity_lower for word in ['conveyor', 'machine', 'equipment', 'system', 'factory', 'production']):
+            return 'industrial' 
+        elif any(word in entity_lower for word in ['detector', 'microscope', 'analyzer', 'research', 'laboratory']):
             return 'scientific'
-        elif any(word in entity_lower for word in ['ball', 'table', 'chair', 'book', 'computer']):
-            return 'physical'
-        elif any(word in entity_lower for word in ['area', 'zone', 'space', 'place', 'location']):
+        elif any(word in entity_lower for word in ['computer', 'keyboard', 'monitor', 'screen', 'digital', 'electronic']):
+            return 'electronic'
+        elif any(word in entity_lower for word in ['table', 'chair', 'desk', 'bed', 'sofa', 'furniture']):
+            return 'furniture'
+        elif any(word in entity_lower for word in ['area', 'zone', 'space', 'place', 'location', 'position']):
             return 'spatial'
+        elif any(word in entity_lower for word in ['ball', 'object', 'material', 'substance']):
+            return 'physical'
         else:
             return 'unknown'
+
+    def classify_entity_type(self, entity: str, context_entities: List[str] = None) -> str:
+        """Main entity classification function with fallback chain"""
+        if context_entities:
+            return self.classify_entity_type_contextual(entity, context_entities)
+        else:
+            return self.classify_entity_type_semantic(entity)
+
+    def _cosine_similarity(self, vec1, vec2):
+        """Compute cosine similarity between two vectors"""
+        try:
+            import numpy as np
+            # Normalize vectors
+            vec1_norm = vec1 / np.linalg.norm(vec1)
+            vec2_norm = vec2 / np.linalg.norm(vec2)
+            # Compute cosine similarity
+            return np.dot(vec1_norm, vec2_norm)
+        except:
+            return 0.0
 
     def process_with_real_gasm(
         self, 
@@ -824,9 +915,10 @@ class RealGASMInterface:
     ) -> Dict[str, Any]:
         """Enhanced simulation when real GASM fails"""
         try:
-            # Create realistic entity data
+            # Create realistic entity data with contextual classification
+            entity_names = [str(e) for e in entities]
             entity_data = []
-            for i, entity in enumerate(entities):
+            for i, entity in enumerate(entity_names):
                 # Generate more realistic positions based on text analysis
                 angle = (i * 2 * np.pi) / max(len(entities), 3)
                 radius = 2 + i * 0.3
@@ -839,7 +931,7 @@ class RealGASMInterface:
                 
                 entity_data.append({
                     'name': entity,
-                    'type': self.classify_entity_type(entity),
+                    'type': self.classify_entity_type(entity, entity_names),
                     'position': position,
                     'confidence': min(0.9, 0.6 + len(entity) * 0.02)
                 })
