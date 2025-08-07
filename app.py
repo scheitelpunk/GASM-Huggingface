@@ -1638,4 +1638,10 @@ def create_beautiful_interface():
 if __name__ == "__main__":
     demo = create_beautiful_interface()
     demo.queue(max_size=20)
-    demo.launch()
+    
+    # Fix for Hugging Face Spaces deployment
+    try:
+        demo.launch(share=False, server_name="0.0.0.0", server_port=7860)
+    except Exception as e:
+        print(f"Standard launch failed: {e}, trying with share=True")
+        demo.launch(share=True, server_name="0.0.0.0", server_port=7860)
