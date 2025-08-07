@@ -1586,6 +1586,10 @@ def real_gasm_process_text(
         return real_gasm_process_text_cpu(text, enable_geometry, show_visualization, max_length)
 
 
+def insert_example_text(example_text):
+    """Function to return example text for insertion"""
+    return example_text
+
 def create_beautiful_interface():
     """Create a beautiful Gradio interface"""
     
@@ -1675,6 +1679,22 @@ def create_beautiful_interface():
                 🚀 GASM Enhanced
             </h1>
             <h2 style="color: #555; margin-bottom: 15px;">Geometric Attention for Spatial & Mathematical Understanding</h2>
+            
+            <!-- 3-bullet summary box -->
+            <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; margin: 20px auto; max-width: 600px; border: 1px solid rgba(255,255,255,0.2);">
+                <div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">
+                    <div style="color: #333; font-weight: 500; font-size: 1.1em;">
+                        • Understands <em>where</em> things are – not just <em>what</em>
+                    </div>
+                    <div style="color: #333; font-weight: 500; font-size: 1.1em;">
+                        • Uses real 3D SE(3) math
+                    </div>
+                    <div style="color: #333; font-weight: 500; font-size: 1.1em;">
+                        • Visualizes spatial meaning in real-time
+                    </div>
+                </div>
+            </div>
+            
             <p style="color: #666; font-size: 1.1em; margin-bottom: 20px; max-width: 800px; margin-left: auto; margin-right: auto;">
                 <strong>Bridging Natural Language & 3D Geometry</strong><br>
                 Transform text into geometric understanding using SE(3)-invariant neural architectures, 
@@ -1695,6 +1715,13 @@ def create_beautiful_interface():
             with gr.Row():
                 with gr.Column(scale=2):
                     gr.HTML("<h3 style='color: white; margin-bottom: 15px;'>📝 Input Text</h3>")
+                    
+                    # Helper text above input
+                    gr.HTML("""
+                    <div style="background: rgba(255, 255, 255, 0.9); border-radius: 8px; padding: 10px; margin-bottom: 10px; border-left: 4px solid #667eea;">
+                        <span style="color: #555; font-weight: 500;">💡 Try: "The robot places the sensor above the table."</span>
+                    </div>
+                    """)
                     
                     text_input = gr.Textbox(
                         label="",
@@ -1731,41 +1758,71 @@ def create_beautiful_interface():
                 with gr.Column(scale=1):
                     gr.HTML("""
                     <div class="feature-box">
-                        <h3 style="color: #667eea; margin-bottom: 15px;">🔬 What GASM Does</h3>
-                        <ul style="list-style: none; padding: 0;">
-                            <li style="padding: 8px 0; border-bottom: 1px solid #eee;">
-                                <strong>📐 SE(3) Geometry</strong><br>
-                                <small>Proper 3D rotations & translations using Lie groups</small>
-                            </li>
-                            <li style="padding: 8px 0; border-bottom: 1px solid #eee;">
-                                <strong>🧠 Advanced NLP</strong><br>
-                                <small>spaCy + semantic filtering for robust entity extraction</small>
-                            </li>
-                            <li style="padding: 8px 0; border-bottom: 1px solid #eee;">
-                                <strong>📊 Curvature Optimization</strong><br>
-                                <small>Minimizes discrete curvature for optimal spatial layout</small>
-                            </li>
-                            <li style="padding: 8px 0;">
-                                <strong>🌌 Real-time 3D</strong><br>
-                                <small>Visualizes geometric relationships in proper 3D space</small>
-                            </li>
-                        </ul>
+                        <h3 style="color: #667eea; margin-bottom: 15px; text-align: center;">🔬 GASM Architecture</h3>
+                        
+                        <!-- 3-column panel -->
+                        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                            <div style="flex: 1; background: linear-gradient(135deg, #FF6B6B, #FF8E8E); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 24px; margin-bottom: 8px;">📐</div>
+                                <h4 style="margin: 0 0 8px 0; font-size: 14px;">SE(3) Geometry</h4>
+                                <small style="font-size: 12px; opacity: 0.9;">Understands true 3D positioning</small>
+                            </div>
+                            <div style="flex: 1; background: linear-gradient(135deg, #4ECDC4, #44B7B8); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 24px; margin-bottom: 8px;">🧠</div>
+                                <h4 style="margin: 0 0 8px 0; font-size: 14px;">NLP</h4>
+                                <small style="font-size: 12px; opacity: 0.9;">Semantic entity recognition</small>
+                            </div>
+                            <div style="flex: 1; background: linear-gradient(135deg, #667EEA, #764BA2); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 24px; margin-bottom: 8px;">🌌</div>
+                                <h4 style="margin: 0 0 8px 0; font-size: 14px;">3D Output</h4>
+                                <small style="font-size: 12px; opacity: 0.9;">Visual spatial scene</small>
+                            </div>
+                        </div>
                         
                         <div style="margin-top: 20px; padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 10px;">
                             <h4 style="color: #667eea; margin: 0 0 10px 0;">🎯 Try These Examples:</h4>
-                            <p style="font-size: 0.9em; color: #555; margin: 5px 0;">
-                                <strong>Robotics:</strong> "The arm moves the component above the platform"<br>
-                                <strong>Scientific:</strong> "The electron orbits the nucleus"<br>
-                                <strong>Everyday:</strong> "The book sits between keyboard and monitor"
-                            </p>
+                            <div style="font-size: 0.9em; color: #555;">
+                                <div style="display: flex; align-items: center; margin: 8px 0; padding: 8px; background: rgba(255,255,255,0.7); border-radius: 8px;">
+                                    <span style="flex: 1;"><strong>Robotics:</strong> "The arm moves the component above the platform"</span>
+                                    <button onclick="document.querySelector('textarea').value = 'The robotic arm moves the satellite component above the assembly platform while the crystal detector rotates around its central axis.'; document.querySelector('textarea').dispatchEvent(new Event('input'));" style="margin-left: 10px; padding: 4px 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Insert</button>
+                                </div>
+                                <div style="display: flex; align-items: center; margin: 8px 0; padding: 8px; background: rgba(255,255,255,0.7); border-radius: 8px;">
+                                    <span style="flex: 1;"><strong>Scientific:</strong> "The electron orbits the nucleus"</span>
+                                    <button onclick="document.querySelector('textarea').value = 'The electron orbits the nucleus while the magnetic field flows through the crystal lattice structure.'; document.querySelector('textarea').dispatchEvent(new Event('input'));" style="margin-left: 10px; padding: 4px 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Insert</button>
+                                </div>
+                                <div style="display: flex; align-items: center; margin: 8px 0; padding: 8px; background: rgba(255,255,255,0.7); border-radius: 8px;">
+                                    <span style="flex: 1;"><strong>Everyday:</strong> "The book sits between keyboard and monitor"</span>
+                                    <button onclick="document.querySelector('textarea').value = 'The ball lies left of the table next to the computer, while the book sits between the keyboard and the monitor.'; document.querySelector('textarea').dispatchEvent(new Event('input'));" style="margin-left: 10px; padding: 4px 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Insert</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     """)
             
-            # Results section with better layout
+            # Results section with better layout and visual separation
             gr.HTML("<h3 style='color: white; margin: 30px 0 15px 0; text-align: center;'>📊 Analysis Results</h3>")
             
+            # Overall summary
             output_summary = gr.Markdown(elem_classes="feature-box")
+            
+            # Visually separated output areas
+            with gr.Row():
+                with gr.Column():
+                    gr.HTML("""
+                    <div style="background: linear-gradient(135deg, #4ECDC4, #44B7B8); color: white; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 10px;">
+                        <h4 style="margin: 0; font-size: 16px;">🧠 NLP Results</h4>
+                        <small style="opacity: 0.9;">Entities & Relations</small>
+                    </div>
+                    """)
+                    # NLP results will be shown in the main summary for now
+                    
+                with gr.Column():
+                    gr.HTML("""
+                    <div style="background: linear-gradient(135deg, #667EEA, #764BA2); color: white; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 10px;">
+                        <h4 style="margin: 0; font-size: 16px;">📐 Geometry Results</h4>
+                        <small style="opacity: 0.9;">Curvature, Convergence, 3D Plot</small>
+                    </div>
+                    """)
             
             with gr.Row():
                 curvature_plot = gr.Image(label="📈 SE(3) Geometric Convergence", elem_classes="feature-box")
@@ -1797,9 +1854,18 @@ def create_beautiful_interface():
             label="🚀 Click to try these examples"
         )
         
-        # Enhanced footer with mathematical context
+        # Simple footer CTA for robotics/simulation pipeline
         gr.HTML("""
-        <div style="text-align: center; padding: 40px 20px; margin-top: 40px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; margin: 40px 20px;">
+        <div style="text-align: center; padding: 30px 20px; margin-top: 30px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; margin: 30px 20px;">
+            <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <h3 style="margin: 0 0 10px 0; font-size: 18px;">🛰️ Want to use GASM in your robotics or simulation pipeline?</h3>
+                <p style="margin: 10px 0; opacity: 0.9;">Get geometric understanding of natural language for robotic control, spatial reasoning, and 3D scene understanding.</p>
+                <a href="mailto:neuberger@versino.de?subject=GASM Integration - Robotics Pipeline&body=Hello,%0A%0AI'm interested in integrating GASM into my robotics/simulation pipeline.%0A%0AProject details:%0A- Use case:%0A- Scale:%0A- Timeline:%0A%0APlease let me know about integration options.%0A%0ABest regards" 
+                   style="display: inline-block; margin-top: 10px; padding: 12px 24px; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 25px; font-weight: bold; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); transition: all 0.3s ease;">
+                    📧 Contact us
+                </a>
+            </div>
+            
             <h3 style="color: white; margin-bottom: 20px;">🧮 The Mathematics Behind GASM</h3>
             <div style="display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 20px;">
                 <div style="color: rgba(255,255,255,0.9); margin: 10px;">
