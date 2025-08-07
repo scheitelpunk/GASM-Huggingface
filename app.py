@@ -51,10 +51,20 @@ class RealGASMInterface:
         
         # Entity and relation patterns for text processing
         self.entity_patterns = [
-            r'\b(robot\w*|arm\w*|satellite\w*|crystal\w*|molecule\w*|atom\w*|electron\w*)\b',
-            r'\b(ball|table|chair|book|computer|lamp|vase|shelf|tv|sofa)\b',
-            r'\b(gedanken|vertrauen|zweifel|hoffnung|verzweiflung)\b',
-            r'\b(der|die|das)\s+([a-zA-Z]+)\b'
+            # Technical/scientific objects
+            r'\b(robot\w*|arm\w*|satellite\w*|crystal\w*|molecule\w*|atom\w*|electron\w*|detector\w*|sensor\w*|motor\w*|beam\w*|component\w*|platform\w*|axis\w*|field\w*|system\w*|reactor\w*|coolant\w*|turbine\w*)\b',
+            # Office/household devices (extended)
+            r'\b(ball|table|chair|book|computer|keyboard|monitor|screen|mouse|laptop|desk|lamp|vase|shelf|tv|sofa|phone|tablet|printer|scanner|camera|speaker)\b',
+            # Spatial objects
+            r'\b(room|door|window|wall|floor|ceiling|corner|center|side|edge|surface|space|area|zone|place|location|position|spot)\b',
+            # Abstract concepts
+            r'\b(gedanken|vertrauen|zweifel|hoffnung|verzweiflung|idee|konzept|theorie|prinzip|regel|methode|prozess|ablauf)\b',
+            # German article constructions (to capture more nouns)
+            r'\b(der|die|das)\s+([a-zA-Z]+)\b',
+            # English constructions (the + noun)
+            r'\bthe\s+([a-zA-Z]+)\b',
+            # General noun patterns (words starting with capital letter or longer than 4 chars)
+            r'\b([A-Z][a-z]{3,}|[a-z]{5,})\b'
         ]
         
         self.spatial_relations = {
@@ -74,26 +84,48 @@ class RealGASMInterface:
         }
 
     def extract_entities_from_text(self, text: str) -> List[str]:
-        """Extract entities from text using simple pattern matching"""
+        """Extract entities from text using improved pattern matching"""
         import re
         entities = []
-        
-        # Extract meaningful words (nouns, objects, concepts)
-        words = text.lower().split()
         
         # Simple entity extraction based on patterns
         for pattern in self.entity_patterns:
             matches = re.findall(pattern, text.lower())
-            if isinstance(matches[0], tuple) if matches else False:
-                entities.extend([match[1] for match in matches if len(match[1]) > 2])
-            else:
-                entities.extend([match for match in matches if len(match) > 2])
+            if matches:
+                if isinstance(matches[0], tuple):
+                    # For patterns with groups (e.g. "der/die/das + noun")
+                    entities.extend([match[-1] for match in matches if len(match[-1]) > 2])
+                else:
+                    # For simple patterns
+                    entities.extend([match for match in matches if len(match) > 2])
         
-        # Remove duplicates and common words
-        stop_words = {'der', 'die', 'das', 'und', 'oder', 'aber', 'mit', 'von', 'zu', 'in', 'auf', 'für'}
+        # Additionally: Extract all nouns with prepositions
+        preposition_patterns = [
+            r'\b(?:next\s+to|left\s+of|right\s+of|above|below|between|behind|in\s+front\s+of|near|around|inside|outside)\s+(?:the\s+)?([a-zA-Z]{3,})\b',
+            r'\b(?:neben|links\s+von|rechts\s+von|über|unter|zwischen|hinter|vor|bei|um|in|außen)\s+(?:der|die|das|dem|den)?\s*([a-zA-Z]{3,})\b'
+        ]
+        
+        for pattern in preposition_patterns:
+            matches = re.findall(pattern, text.lower())
+            entities.extend([match for match in matches if len(match) > 2])
+        
+        # Extended stop words list
+        stop_words = {
+            'der', 'die', 'das', 'und', 'oder', 'aber', 'mit', 'von', 'zu', 'in', 'auf', 'für',
+            'the', 'and', 'or', 'but', 'with', 'from', 'to', 'in', 'on', 'for', 'of', 'at',
+            'lies', 'sits', 'stands', 'moves', 'flows', 'rotates', 'begins', 'starts',
+            'liegt', 'sitzt', 'steht', 'bewegt', 'fließt', 'rotiert', 'beginnt', 'startet',
+            'while', 'next', 'left', 'right', 'between', 'above', 'below'
+        }
+        
+        # Clean up and deduplicate
+        entities = [e.strip() for e in entities if e.strip()]
         entities = list(set([e for e in entities if e not in stop_words and len(e) > 2]))
         
-        return entities[:10]  # Limit to 10 entities
+        # Sort by length (longer words first)
+        entities = sorted(entities, key=len, reverse=True)
+        
+        return entities[:12]  # Increase limit to 12 entities
 
     def extract_relations_from_text(self, text: str) -> List[Dict]:
         """Extract relations from text"""
