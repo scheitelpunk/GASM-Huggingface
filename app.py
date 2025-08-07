@@ -1805,6 +1805,29 @@ def create_beautiful_interface():
                         variant="primary",
                         size="lg"
                     )
+                    
+                    # Enhanced examples with cutting-edge domains
+                    gr.Examples(
+                        examples=[
+                            ["Dock the kinase inhibitor with the phenyl ring parallel to the hinge backbone.", True, True, 256],
+                            ["Embed the fluxonium qubit 5 nm above the ground plane, aligned to the Φ = 0.5 Φ₀ sweet spot.", True, True, 256],
+                            ["Arrange four THF molecules tetrahedrally around Li⁺, 2.1 Å Li–O distance.", True, True, 256],
+                            ["Stack perovskite unit cells along ⟨110⟩ with 2 nm inter-layer gap.", True, True, 256],
+                            ["Orient the Pt(111) terrace so CO binds atop, 1.8 Å Pt–C bond length.", True, True, 256],
+                            ["Weave carbon nanotubes into a 3D lattice with 60° torsion for negative Poisson ratio.", True, True, 256],
+                            ["Shape the magnetic flux surface into a D-shaped cross-section, R = 3.5 m, a = 1.2 m.", True, True, 256],
+                            ["Pack the α-helix against the β-sheet at a 35° inter-domain angle.", True, True, 256],
+                            ["Place the SQUID loop 10 μm above the Nb stripline, aligned to the magnetic bias line.", True, True, 256],
+                            ["Segregate the fullerene domains 5 nm from the polymer backbone in vertical columns.", True, True, 256],
+                            ["Define the SN2 trajectory along the C–O bond axis, 180° inversion angle.", True, True, 256],
+                            ["Embed Si nanowires in a zig-zag pattern with 20 nm pitch to scatter phonons.", True, True, 256],
+                            ["Place the aluminum bracket flush against the jig, 5 cm left of the drill bit.", True, True, 256],
+                            ["Shift the electronics pallet three bays toward aisle C, top tier only.", True, True, 256],
+                            ["Float the navy couch 30 cm from the bay window, facing the TV.", True, True, 256]
+                        ],
+                        inputs=[text_input, enable_geometry, show_visualization, max_length],
+                        label="🧬 Click to try cutting-edge domain examples"
+                    )
                 
                 with gr.Column(scale=1):
                     gr.HTML("""
@@ -1831,19 +1854,19 @@ def create_beautiful_interface():
                         </div>
                         
                         <div style="margin-top: 20px; padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 10px;">
-                            <h4 style="color: #667eea; margin: 0 0 10px 0;">🎯 Try These Examples:</h4>
+                            <h4 style="color: #667eea; margin: 0 0 10px 0;">🧬 Domain Examples:</h4>
                             <div style="font-size: 0.9em; color: #555;">
                                 <div style="display: flex; align-items: center; margin: 8px 0; padding: 8px; background: rgba(255,255,255,0.7); border-radius: 8px;">
-                                    <span style="flex: 1;"><strong>Robotics:</strong> "The arm moves the component above the platform"</span>
-                                    <button onclick="document.querySelector('textarea').value = 'The robotic arm moves the satellite component above the assembly platform while the crystal detector rotates around its central axis.'; document.querySelector('textarea').dispatchEvent(new Event('input'));" style="margin-left: 10px; padding: 4px 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Insert</button>
+                                    <span style="flex: 1;"><strong>Drug Design:</strong> "Dock the kinase inhibitor..."</span>
+                                    <button onclick="document.querySelector('textarea').value = 'Dock the kinase inhibitor with the phenyl ring parallel to the hinge backbone.'; document.querySelector('textarea').dispatchEvent(new Event('input'));" style="margin-left: 10px; padding: 4px 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Insert</button>
                                 </div>
                                 <div style="display: flex; align-items: center; margin: 8px 0; padding: 8px; background: rgba(255,255,255,0.7); border-radius: 8px;">
-                                    <span style="flex: 1;"><strong>Scientific:</strong> "The electron orbits the nucleus"</span>
-                                    <button onclick="document.querySelector('textarea').value = 'The electron orbits the nucleus while the magnetic field flows through the crystal lattice structure.'; document.querySelector('textarea').dispatchEvent(new Event('input'));" style="margin-left: 10px; padding: 4px 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Insert</button>
+                                    <span style="flex: 1;"><strong>Quantum:</strong> "Embed the fluxonium qubit..."</span>
+                                    <button onclick="document.querySelector('textarea').value = 'Embed the fluxonium qubit 5 nm above the ground plane, aligned to the Φ = 0.5 Φ₀ sweet spot.'; document.querySelector('textarea').dispatchEvent(new Event('input'));" style="margin-left: 10px; padding: 4px 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Insert</button>
                                 </div>
                                 <div style="display: flex; align-items: center; margin: 8px 0; padding: 8px; background: rgba(255,255,255,0.7); border-radius: 8px;">
-                                    <span style="flex: 1;"><strong>Everyday:</strong> "The book sits between keyboard and monitor"</span>
-                                    <button onclick="document.querySelector('textarea').value = 'The ball lies left of the table next to the computer, while the book sits between the keyboard and the monitor.'; document.querySelector('textarea').dispatchEvent(new Event('input'));" style="margin-left: 10px; padding: 4px 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Insert</button>
+                                    <span style="flex: 1;"><strong>Manufacturing:</strong> "Place the aluminum bracket..."</span>
+                                    <button onclick="document.querySelector('textarea').value = 'Place the aluminum bracket flush against the jig, 5 cm left of the drill bit.'; document.querySelector('textarea').dispatchEvent(new Event('input'));" style="margin-left: 10px; padding: 4px 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Insert</button>
                                 </div>
                             </div>
                         </div>
@@ -1893,28 +1916,6 @@ def create_beautiful_interface():
             outputs=[output_summary, curvature_plot, entity_3d_plot, detailed_output]
         )
         
-        # Enhanced examples with cutting-edge domains
-        gr.Examples(
-            examples=[
-                ["Dock the kinase inhibitor with the phenyl ring parallel to the hinge backbone.", True, True, 256],
-                ["Embed the fluxonium qubit 5 nm above the ground plane, aligned to the Φ = 0.5 Φ₀ sweet spot.", True, True, 256],
-                ["Arrange four THF molecules tetrahedrally around Li⁺, 2.1 Å Li–O distance.", True, True, 256],
-                ["Stack perovskite unit cells along ⟨110⟩ with 2 nm inter-layer gap.", True, True, 256],
-                ["Orient the Pt(111) terrace so CO binds atop, 1.8 Å Pt–C bond length.", True, True, 256],
-                ["Weave carbon nanotubes into a 3D lattice with 60° torsion for negative Poisson ratio.", True, True, 256],
-                ["Shape the magnetic flux surface into a D-shaped cross-section, R = 3.5 m, a = 1.2 m.", True, True, 256],
-                ["Pack the α-helix against the β-sheet at a 35° inter-domain angle.", True, True, 256],
-                ["Place the SQUID loop 10 μm above the Nb stripline, aligned to the magnetic bias line.", True, True, 256],
-                ["Segregate the fullerene domains 5 nm from the polymer backbone in vertical columns.", True, True, 256],
-                ["Define the SN2 trajectory along the C–O bond axis, 180° inversion angle.", True, True, 256],
-                ["Embed Si nanowires in a zig-zag pattern with 20 nm pitch to scatter phonons.", True, True, 256],
-                ["Place the aluminum bracket flush against the jig, 5 cm left of the drill bit.", True, True, 256],
-                ["Shift the electronics pallet three bays toward aisle C, top tier only.", True, True, 256],
-                ["Float the navy couch 30 cm from the bay window, facing the TV.", True, True, 256]
-            ],
-            inputs=[text_input, enable_geometry, show_visualization, max_length],
-            label="🧬 Click to try cutting-edge domain examples"
-        )
         
         # Simple footer CTA for robotics/simulation pipeline
         gr.HTML("""
