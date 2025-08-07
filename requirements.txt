@@ -10,3 +10,6 @@ spaces>=0.19.0
 fastapi>=0.100.0
 uvicorn>=0.23.0
 psutil>=5.9.0
+spacy>=3.7.0
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
+seaborn>=0.11.0

@@ -20,6 +20,31 @@ from PIL import Image
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Import spaCy for advanced NLP
+try:
+    import spacy
+    from spacy import displacy
+    # Try to load English model
+    nlp = spacy.load("en_core_web_sm")
+    SPACY_AVAILABLE = True
+    logger.info("✅ Successfully loaded spaCy English model")
+    print("✅ spaCy NLP model loaded successfully")
+except ImportError as e:
+    logger.warning(f"spaCy not available: {e}. Using fallback pattern matching.")
+    SPACY_AVAILABLE = False
+    nlp = None
+    print(f"⚠️ spaCy import failed: {e}")
+except OSError as e:
+    logger.warning(f"spaCy English model not found: {e}. Using fallback pattern matching.")
+    SPACY_AVAILABLE = False  
+    nlp = None
+    print(f"⚠️ spaCy model loading failed: {e}")
+except Exception as e:
+    logger.error(f"spaCy initialization failed: {e}. Using fallback pattern matching.")
+    SPACY_AVAILABLE = False
+    nlp = None
+    print(f"❌ spaCy error: {e}")
+
 # Import real GASM components from core file
 try:
     # Carefully re-enable GASM import with error isolation
@@ -49,22 +74,42 @@ class RealGASMInterface:
         self.tokenizer = None
         self.last_gasm_results = None  # Store last results for visualization
         
-        # Entity and relation patterns for text processing
-        self.entity_patterns = [
-            # Technical/scientific objects
-            r'\b(robot\w*|arm\w*|satellite\w*|crystal\w*|molecule\w*|atom\w*|electron\w*|detector\w*|sensor\w*|motor\w*|beam\w*|component\w*|platform\w*|axis\w*|field\w*|system\w*|reactor\w*|coolant\w*|turbine\w*)\b',
-            # Office/household devices (extended)
-            r'\b(ball|table|chair|book|computer|keyboard|monitor|screen|mouse|laptop|desk|lamp|vase|shelf|tv|sofa|phone|tablet|printer|scanner|camera|speaker)\b',
-            # Spatial objects
-            r'\b(room|door|window|wall|floor|ceiling|corner|center|side|edge|surface|space|area|zone|place|location|position|spot)\b',
-            # Abstract concepts
-            r'\b(gedanken|vertrauen|zweifel|hoffnung|verzweiflung|idee|konzept|theorie|prinzip|regel|methode|prozess|ablauf)\b',
-            # German article constructions (to capture more nouns)
-            r'\b(der|die|das)\s+([a-zA-Z]+)\b',
-            # English constructions (the + noun)
-            r'\bthe\s+([a-zA-Z]+)\b',
-            # General noun patterns (words starting with capital letter or longer than 4 chars)
-            r'\b([A-Z][a-z]{3,}|[a-z]{5,})\b'
+        # Domain-specific semantic categories for filtering
+        self.semantic_categories = {
+            'physical_objects': {
+                'furniture': ['table', 'chair', 'desk', 'shelf', 'bed', 'sofa', 'cabinet'],
+                'devices': ['computer', 'keyboard', 'monitor', 'screen', 'mouse', 'laptop', 'phone', 'tablet', 'printer', 'scanner', 'camera', 'speaker'],
+                'tools': ['hammer', 'screwdriver', 'wrench', 'drill', 'saw', 'knife'],
+                'containers': ['box', 'bag', 'bottle', 'cup', 'bowl', 'jar', 'basket'],
+                'vehicles': ['car', 'truck', 'bus', 'train', 'plane', 'boat', 'bicycle'],
+                'sports': ['ball', 'bat', 'racket', 'stick', 'net', 'goal']
+            },
+            'technical_objects': {
+                'robotics': ['robot', 'arm', 'sensor', 'motor', 'actuator', 'controller', 'manipulator'],
+                'scientific': ['detector', 'microscope', 'telescope', 'spectrometer', 'analyzer', 'probe'],
+                'industrial': ['reactor', 'turbine', 'compressor', 'pump', 'valve', 'conveyor', 'assembly', 'platform'],
+                'electronic': ['circuit', 'processor', 'memory', 'display', 'antenna', 'battery', 'capacitor']
+            },
+            'spatial_objects': {
+                'architectural': ['room', 'door', 'window', 'wall', 'floor', 'ceiling', 'corner'],
+                'locations': ['center', 'side', 'edge', 'surface', 'space', 'area', 'zone', 'place', 'position', 'spot'],
+                'natural': ['tree', 'rock', 'river', 'mountain', 'field', 'forest', 'lake']
+            },
+            'scientific_entities': {
+                'physics': ['atom', 'electron', 'proton', 'neutron', 'photon', 'molecule', 'particle'],
+                'chemistry': ['crystal', 'compound', 'solution', 'reaction', 'catalyst', 'polymer'],
+                'astronomy': ['satellite', 'planet', 'star', 'galaxy', 'comet', 'asteroid', 'orbit']
+            }
+        }
+        
+        # Fallback patterns for when spaCy is not available
+        self.fallback_entity_patterns = [
+            # High-confidence patterns
+            r'\b(robot\w*|arm\w*|satellite\w*|crystal\w*|molecule\w*|atom\w*|electron\w*|detector\w*|sensor\w*|motor\w*)\b',
+            r'\b(ball|table|chair|book|computer|keyboard|monitor|screen|mouse|laptop|desk|lamp|vase|shelf|tv|sofa)\b',
+            r'\b(room|door|window|wall|floor|ceiling|corner|center|side|edge|surface)\b',
+            # German and English article constructions
+            r'\b(?:der|die|das|the)\s+([a-zA-Z]{3,})\b'
         ]
         
         self.spatial_relations = {
@@ -84,12 +129,86 @@ class RealGASMInterface:
         }
 
     def extract_entities_from_text(self, text: str) -> List[str]:
-        """Extract entities from text using improved pattern matching"""
+        """Extract entities using advanced NLP with spaCy or intelligent fallback"""
+        
+        if SPACY_AVAILABLE and nlp:
+            return self._extract_entities_with_spacy(text)
+        else:
+            return self._extract_entities_fallback(text)
+    
+    def _extract_entities_with_spacy(self, text: str) -> List[str]:
+        """Advanced entity extraction using spaCy NLP"""
+        try:
+            # Process text with spaCy
+            doc = nlp(text)
+            entities = []
+            
+            # 1. Extract named entities (NER)
+            for ent in doc.ents:
+                # Filter for relevant entity types
+                if ent.label_ in ['PERSON', 'ORG', 'GPE', 'PRODUCT', 'WORK_OF_ART', 'FAC']:
+                    entities.append(ent.text.lower().strip())
+            
+            # 2. Extract nouns (POS tagging)
+            for token in doc:
+                if (token.pos_ == 'NOUN' and 
+                    not token.is_stop and 
+                    not token.is_punct and 
+                    len(token.text) > 2):
+                    entities.append(token.lemma_.lower().strip())
+            
+            # 3. Extract compound nouns and noun phrases
+            for chunk in doc.noun_chunks:
+                # Focus on the head noun of the chunk
+                head_text = chunk.root.lemma_.lower().strip()
+                if len(head_text) > 2 and not chunk.root.is_stop:
+                    entities.append(head_text)
+                
+                # Also consider the full chunk if it's short and meaningful
+                chunk_text = chunk.text.lower().strip()
+                if (len(chunk_text.split()) <= 2 and 
+                    len(chunk_text) > 2 and 
+                    self._is_likely_entity(chunk_text)):
+                    entities.append(chunk_text)
+            
+            # 4. Extract objects of spatial prepositions
+            spatial_prepositions = {
+                'next', 'left', 'right', 'above', 'below', 'between', 
+                'behind', 'front', 'near', 'around', 'inside', 'outside',
+                'on', 'in', 'under', 'over', 'beside'
+            }
+            
+            for token in doc:
+                if (token.lemma_.lower() in spatial_prepositions and 
+                    token.head.pos_ == 'NOUN'):
+                    entities.append(token.head.lemma_.lower().strip())
+                
+                # Look for objects after spatial prepositions
+                for child in token.children:
+                    if (token.lemma_.lower() in spatial_prepositions and 
+                        child.pos_ == 'NOUN'):
+                        entities.append(child.lemma_.lower().strip())
+            
+            # 5. Semantic filtering using domain categories
+            filtered_entities = self._filter_entities_semantically(entities)
+            
+            # 6. Clean up and deduplicate
+            cleaned_entities = self._clean_and_deduplicate_entities(filtered_entities)
+            
+            logger.info(f"spaCy extracted {len(cleaned_entities)} entities from '{text[:50]}...'")
+            return cleaned_entities
+            
+        except Exception as e:
+            logger.warning(f"spaCy entity extraction failed: {e}, falling back to patterns")
+            return self._extract_entities_fallback(text)
+    
+    def _extract_entities_fallback(self, text: str) -> List[str]:
+        """Fallback entity extraction using improved pattern matching"""
         import re
         entities = []
         
-        # Simple entity extraction based on patterns
-        for pattern in self.entity_patterns:
+        # Use fallback patterns
+        for pattern in self.fallback_entity_patterns:
             matches = re.findall(pattern, text.lower())
             if matches:
                 if isinstance(matches[0], tuple):
@@ -99,7 +218,7 @@ class RealGASMInterface:
                     # For simple patterns
                     entities.extend([match for match in matches if len(match) > 2])
         
-        # Additionally: Extract all nouns with prepositions
+        # Extract objects after spatial prepositions
         preposition_patterns = [
             r'\b(?:next\s+to|left\s+of|right\s+of|above|below|between|behind|in\s+front\s+of|near|around|inside|outside)\s+(?:the\s+)?([a-zA-Z]{3,})\b',
             r'\b(?:neben|links\s+von|rechts\s+von|über|unter|zwischen|hinter|vor|bei|um|in|außen)\s+(?:der|die|das|dem|den)?\s*([a-zA-Z]{3,})\b'
@@ -109,23 +228,96 @@ class RealGASMInterface:
             matches = re.findall(pattern, text.lower())
             entities.extend([match for match in matches if len(match) > 2])
         
-        # Extended stop words list
+        # Semantic filtering and cleanup
+        filtered_entities = self._filter_entities_semantically(entities)
+        cleaned_entities = self._clean_and_deduplicate_entities(filtered_entities)
+        
+        logger.info(f"Fallback extracted {len(cleaned_entities)} entities from '{text[:50]}...'")
+        return cleaned_entities
+    
+    def _is_likely_entity(self, text: str) -> bool:
+        """Determine if a text chunk is likely to be a meaningful entity"""
+        # Skip very common words and short words
+        common_words = {'this', 'that', 'these', 'those', 'some', 'many', 'few', 'all', 'each', 'every'}
+        if text.lower() in common_words or len(text) < 3:
+            return False
+        
+        # Check if it's in our semantic categories
+        return self._is_in_semantic_categories(text)
+    
+    def _is_in_semantic_categories(self, entity: str) -> bool:
+        """Check if entity belongs to any of our semantic categories"""
+        entity_lower = entity.lower().strip()
+        
+        for category, subcategories in self.semantic_categories.items():
+            for subcategory, items in subcategories.items():
+                if entity_lower in items:
+                    return True
+                # Also check for partial matches for compound words
+                for item in items:
+                    if item in entity_lower or entity_lower in item:
+                        return True
+        return False
+    
+    def _filter_entities_semantically(self, entities: List[str]) -> List[str]:
+        """Filter entities based on semantic relevance"""
+        filtered = []
+        
+        for entity in entities:
+            entity_clean = entity.lower().strip()
+            
+            # Always include if in semantic categories
+            if self._is_in_semantic_categories(entity_clean):
+                filtered.append(entity_clean)
+                continue
+            
+            # Include if it's a likely physical object (basic heuristics)
+            if (len(entity_clean) >= 4 and 
+                not entity_clean.endswith('ing') and  # Exclude gerunds
+                not entity_clean.endswith('ly') and   # Exclude adverbs
+                entity_clean.isalpha()):              # Only alphabetic
+                filtered.append(entity_clean)
+        
+        return filtered
+    
+    def _clean_and_deduplicate_entities(self, entities: List[str]) -> List[str]:
+        """Clean up and deduplicate entity list"""
+        
+        # Extended stop words
         stop_words = {
             'der', 'die', 'das', 'und', 'oder', 'aber', 'mit', 'von', 'zu', 'in', 'auf', 'für',
             'the', 'and', 'or', 'but', 'with', 'from', 'to', 'in', 'on', 'for', 'of', 'at',
             'lies', 'sits', 'stands', 'moves', 'flows', 'rotates', 'begins', 'starts',
             'liegt', 'sitzt', 'steht', 'bewegt', 'fließt', 'rotiert', 'beginnt', 'startet',
-            'while', 'next', 'left', 'right', 'between', 'above', 'below'
+            'while', 'next', 'left', 'right', 'between', 'above', 'below', 'around',
+            'time', 'way', 'thing', 'part', 'case', 'work', 'life', 'world', 'year'
         }
         
-        # Clean up and deduplicate
-        entities = [e.strip() for e in entities if e.strip()]
-        entities = list(set([e for e in entities if e not in stop_words and len(e) > 2]))
+        # Clean and filter
+        cleaned = []
+        for entity in entities:
+            entity_clean = entity.lower().strip()
+            if (entity_clean not in stop_words and 
+                len(entity_clean) > 2 and 
+                entity_clean.isalpha()):
+                cleaned.append(entity_clean)
         
-        # Sort by length (longer words first)
-        entities = sorted(entities, key=len, reverse=True)
+        # Deduplicate while preserving order
+        seen = set()
+        deduplicated = []
+        for entity in cleaned:
+            if entity not in seen:
+                seen.add(entity)
+                deduplicated.append(entity)
         
-        return entities[:12]  # Increase limit to 12 entities
+        # Sort by relevance (semantic category entities first, then by length)
+        def sort_key(entity):
+            is_semantic = self._is_in_semantic_categories(entity)
+            return (not is_semantic, -len(entity))  # Semantic entities first, then longer words
+        
+        deduplicated.sort(key=sort_key)
+        
+        return deduplicated[:15]  # Increase limit to 15 entities
 
     def extract_relations_from_text(self, text: str) -> List[Dict]:
         """Extract relations from text"""
