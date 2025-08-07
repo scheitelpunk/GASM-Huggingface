@@ -85,9 +85,11 @@ class RealGASMInterface:
                 'sports': ['ball', 'bat', 'racket', 'stick', 'net', 'goal']
             },
             'technical_objects': {
-                'robotics': ['robot', 'arm', 'sensor', 'motor', 'actuator', 'controller', 'manipulator'],
-                'scientific': ['detector', 'microscope', 'telescope', 'spectrometer', 'analyzer', 'probe'],
-                'industrial': ['reactor', 'turbine', 'compressor', 'pump', 'valve', 'conveyor', 'assembly', 'platform'],
+                'robotics': ['robot', 'arm', 'sensor', 'motor', 'actuator', 'controller', 'manipulator', 'gripper', 'joint'],
+                'scientific': ['detector', 'microscope', 'telescope', 'spectrometer', 'analyzer', 'probe', 'scanner'],
+                'industrial': ['reactor', 'turbine', 'compressor', 'pump', 'valve', 'conveyor', 'assembly', 'platform', 
+                             'machine', 'equipment', 'apparatus', 'device', 'unit', 'system', 'installation',
+                             'sorting', 'sorter', 'belt', 'line', 'station', 'workstation', 'cell'],
                 'electronic': ['circuit', 'processor', 'memory', 'display', 'antenna', 'battery', 'capacitor']
             },
             'spatial_objects': {
@@ -115,7 +117,9 @@ class RealGASMInterface:
         self.spatial_relations = {
             'links': 'spatial_left', 'rechts': 'spatial_right', 'left': 'spatial_left', 'right': 'spatial_right',
             'über': 'spatial_above', 'under': 'spatial_below', 'above': 'spatial_above', 'below': 'spatial_below',
-            'zwischen': 'spatial_between', 'between': 'spatial_between', 'auf': 'spatial_on', 'on': 'spatial_on'
+            'zwischen': 'spatial_between', 'between': 'spatial_between', 'auf': 'spatial_on', 'on': 'spatial_on',
+            'towards': 'spatial_towards', 'richtung': 'spatial_towards', 'zu': 'spatial_towards', 'nach': 'spatial_towards',
+            'against': 'spatial_against', 'gegen': 'spatial_against', 'facing': 'spatial_facing', 'gerichtet': 'spatial_facing'
         }
         
         self.temporal_relations = {
@@ -283,14 +287,19 @@ class RealGASMInterface:
     def _clean_and_deduplicate_entities(self, entities: List[str]) -> List[str]:
         """Clean up and deduplicate entity list"""
         
-        # Extended stop words
+        # Extended stop words (including geometric/measurement terms)
         stop_words = {
             'der', 'die', 'das', 'und', 'oder', 'aber', 'mit', 'von', 'zu', 'in', 'auf', 'für',
             'the', 'and', 'or', 'but', 'with', 'from', 'to', 'in', 'on', 'for', 'of', 'at',
             'lies', 'sits', 'stands', 'moves', 'flows', 'rotates', 'begins', 'starts',
             'liegt', 'sitzt', 'steht', 'bewegt', 'fließt', 'rotiert', 'beginnt', 'startet',
             'while', 'next', 'left', 'right', 'between', 'above', 'below', 'around',
-            'time', 'way', 'thing', 'part', 'case', 'work', 'life', 'world', 'year'
+            'time', 'way', 'thing', 'part', 'case', 'work', 'life', 'world', 'year',
+            # Geometric/measurement terms that should not be entities
+            'angle', 'degree', 'degrees', 'grad', 'winkel', 'rotation', 'position', 
+            'distance', 'entfernung', 'abstand', 'height', 'höhe', 'width', 'breite',
+            'length', 'länge', 'size', 'größe', 'direction', 'richtung', 'orientation',
+            'place', 'platz', 'setze', 'towards', 'richtung', 'nach'
         }
         
         # Clean and filter
@@ -318,9 +327,70 @@ class RealGASMInterface:
         deduplicated.sort(key=sort_key)
         
         return deduplicated[:15]  # Increase limit to 15 entities
+    
+    def extract_geometric_parameters(self, text: str) -> Dict[str, List]:
+        """Extract geometric parameters like angles, distances, positions"""
+        import re
+        parameters = {
+            'angles': [],
+            'distances': [],
+            'positions': [],
+            'orientations': []
+        }
+        
+        # Extract angles (degrees and radians)
+        angle_patterns = [
+            r'(\d+(?:\.\d+)?)\s*°',  # 45°
+            r'(\d+(?:\.\d+)?)\s*deg(?:ree)?s?',  # 45 degrees
+            r'(\d+(?:\.\d+)?)\s*grad',  # 45 grad (German)
+            r'(\d+(?:\.\d+)?)\s*rad(?:ian)?s?',  # 1.57 radians
+        ]
+        
+        for pattern in angle_patterns:
+            matches = re.findall(pattern, text.lower())
+            for match in matches:
+                parameters['angles'].append({
+                    'value': float(match),
+                    'unit': 'degrees' if '°' in pattern or 'deg' in pattern or 'grad' in pattern else 'radians'
+                })
+        
+        # Extract distances
+        distance_patterns = [
+            r'(\d+(?:\.\d+)?)\s*(mm|cm|m|km|inch|ft)',  # 10 cm, 5 m, etc.
+            r'(\d+(?:\.\d+)?)\s*meter',  # 5 meter
+            r'(\d+(?:\.\d+)?)\s*zentimeter',  # 10 zentimeter
+        ]
+        
+        for pattern in distance_patterns:
+            matches = re.findall(pattern, text.lower())
+            for match in matches:
+                if isinstance(match, tuple):
+                    value, unit = match
+                    parameters['distances'].append({
+                        'value': float(value),
+                        'unit': unit
+                    })
+        
+        # Extract coordinate positions
+        coord_patterns = [
+            r'\((\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)\)',  # (x, y, z)
+            r'x:\s*(\d+(?:\.\d+)?),?\s*y:\s*(\d+(?:\.\d+)?),?\s*z:\s*(\d+(?:\.\d+)?)',  # x: 10, y: 20, z: 30
+        ]
+        
+        for pattern in coord_patterns:
+            matches = re.findall(pattern, text.lower())
+            for match in matches:
+                if len(match) == 3:
+                    parameters['positions'].append({
+                        'x': float(match[0]),
+                        'y': float(match[1]),
+                        'z': float(match[2])
+                    })
+        
+        return parameters
 
     def extract_relations_from_text(self, text: str) -> List[Dict]:
-        """Extract relations from text"""
+        """Extract relations from text including geometric parameters"""
         relations = []
         text_lower = text.lower()
         
@@ -334,6 +404,16 @@ class RealGASMInterface:
                     'word': word,
                     'strength': np.random.uniform(0.6, 0.95)
                 })
+        
+        # Extract geometric parameters and add as metadata
+        geometric_params = self.extract_geometric_parameters(text)
+        if any(geometric_params.values()):  # If any parameters found
+            relations.append({
+                'type': 'geometric_parameters',
+                'word': 'parameters',
+                'strength': 1.0,
+                'parameters': geometric_params
+            })
         
         return relations
 
@@ -642,14 +722,37 @@ class RealGASMInterface:
         """Classify entity type based on semantic content"""
         entity_lower = entity.lower()
         
+        # Use the semantic categories for precise classification
+        for category, subcategories in self.semantic_categories.items():
+            for subcategory, items in subcategories.items():
+                if entity_lower in items:
+                    if category == 'technical_objects':
+                        if subcategory == 'robotics':
+                            return 'robotic'
+                        elif subcategory == 'industrial':
+                            return 'industrial'
+                        elif subcategory == 'scientific':
+                            return 'scientific'
+                        else:
+                            return 'technical'
+                    elif category == 'physical_objects':
+                        return 'physical'
+                    elif category == 'spatial_objects':
+                        return 'spatial'
+                    elif category == 'scientific_entities':
+                        return 'scientific'
+        
+        # Fallback patterns for backwards compatibility
         if any(word in entity_lower for word in ['robot', 'arm', 'sensor', 'motor']):
             return 'robotic'
+        elif any(word in entity_lower for word in ['conveyor', 'machine', 'equipment', 'system']):
+            return 'industrial'
         elif any(word in entity_lower for word in ['atom', 'electron', 'molecule', 'crystal', 'particle']):
-            return 'physical'
+            return 'scientific'
         elif any(word in entity_lower for word in ['ball', 'table', 'chair', 'book', 'computer']):
+            return 'physical'
+        elif any(word in entity_lower for word in ['area', 'zone', 'space', 'place', 'location']):
             return 'spatial'
-        elif any(word in entity_lower for word in ['gedanken', 'vertrauen', 'hoffnung', 'zweifel']):
-            return 'abstract'
         else:
             return 'unknown'
 
