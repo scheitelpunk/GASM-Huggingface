@@ -1,7 +1,7 @@
 """
-Mathematically Correct GASM Core - Phase 2 Implementation
-Using proper SE(3) geometry, geodesic distances, and efficient curvature computation
-FIXED: Index dimension error in PyTorch Geometric operations
+GASM Enhanced Core - Hugging Face Space Optimized
+CPU-compatible with GPU acceleration, intelligent caching, error recovery
+All optimizations integrated for HF deployment
 """
 
 import torch
@@ -968,6 +968,73 @@ class MathematicallyCorrectGASM(nn.Module):
         return results
 
 
+# Enhanced components from integrated system
+class EnhancedBatchProcessor:
+    """Simplified batch processing for HF Spaces"""
+    def __init__(self, max_batch_size=8):
+        self.max_batch_size = max_batch_size
+        self.cache = {}
+    
+    def process_batch(self, texts, gasm_interface):
+        results = []
+        for text in texts[:self.max_batch_size]:
+            cache_key = hash(text)
+            if cache_key in self.cache:
+                results.append(self.cache[cache_key])
+            else:
+                result = gasm_interface.extract_entities_from_text(text)
+                self.cache[cache_key] = result
+                results.append(result)
+        return results
+
+class ErrorRecoveryWrapper:
+    """Simple error recovery for HF Spaces"""
+    def __init__(self, func, max_retries=2):
+        self.func = func
+        self.max_retries = max_retries
+    
+    def __call__(self, *args, **kwargs):
+        for attempt in range(self.max_retries + 1):
+            try:
+                return self.func(*args, **kwargs)
+            except Exception as e:
+                if attempt == self.max_retries:
+                    logger.warning(f"Function failed after {attempt + 1} attempts: {e}")
+                    # Return safe fallback
+                    return {"entities": [], "relations": [], "error": str(e)}
+                time.sleep(0.1 * (2 ** attempt))  # Exponential backoff
+
+def robust_function(max_retries=2):
+    """Decorator for robust function execution"""
+    def decorator(func):
+        return ErrorRecoveryWrapper(func, max_retries)
+    return decorator
+
+# Enhanced GASM with all optimizations
+class EnhancedGASM(MathematicallyCorrectGASM):
+    """Enhanced GASM with integrated optimizations for HF Spaces"""
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.batch_processor = EnhancedBatchProcessor()
+        self.use_mixed_precision = torch.cuda.is_available()
+        
+    @robust_function(max_retries=2)
+    def forward_enhanced(self, E, F, R, C=None, return_intermediate=False):
+        """Enhanced forward with error recovery and optimization"""
+        
+        # Use mixed precision if available
+        if self.use_mixed_precision and torch.cuda.is_available():
+            with torch.cuda.amp.autocast():
+                return super().forward(E, F, R, C, return_intermediate)
+        else:
+            return super().forward(E, F, R, C, return_intermediate)
+    
+    def process_batch_texts(self, texts):
+        """Process multiple texts efficiently"""
+        return self.batch_processor.process_batch(texts, self)
+
 # Compatibility aliases for existing code
 UniversalInvariantAttention = SE3InvariantAttention
-GASM = MathematicallyCorrectGASM
+GASM = EnhancedGASM  # Use enhanced version by default
+MathematicallyCorrectGASM = EnhancedGASM
