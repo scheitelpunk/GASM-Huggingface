@@ -1,56 +1,73 @@
 ---
-title: GASM-LLM Geometric Language Processing
-emoji: 🧠
+title: GASM Enhanced - Geometric Language AI
+emoji: 🚀
 colorFrom: blue
 colorTo: purple
 sdk: gradio
-sdk_version: 4.0.0
+sdk_version: 4.44.1
 app_file: app.py
 pinned: false
 license: cc-by-nd-4.0
 ---
 
-# 🧠 GASM Enhanced - Geometric Language Processing
+# 🚀 GASM Enhanced - Geometric Attention for Spatial Understanding
 
-A HuggingFace Space for geometric language processing using GASM (Geometric Attention with Spatial & Mathematical understanding).
+> *Bridging natural language and geometric reasoning through SE(3)-invariant neural architectures*
 
-## ✨ Features
+## What Makes This Different?
 
-- **SE(3) Invariant Processing**: Mathematically correct geometric attention mechanisms
-- **Real-time Entity Extraction**: Advanced text analysis with spatial relationship detection  
-- **Interactive Visualizations**: 3D entity positioning and curvature evolution plots
-- **Gradio Interface**: User-friendly web interface for text analysis
-- **CPU/GPU Support**: Automatic fallback system with ZeroGPU compatibility
+Traditional AI understands *what* objects are mentioned, but struggles with *where* they are and *how* they relate spatially. GASM changes this.
 
-## 🎯 What is GASM?
+**GASM** (Geometric Attention for Spatial & Mathematical understanding) represents a breakthrough in AI spatial reasoning:
 
-GASM (Geometric Attention with Spatial & Mathematical understanding) enhances language models by:
+- **🧠 Advanced NLP**: Goes beyond keywords with spaCy + semantic categorization  
+- **📐 Proper 3D Math**: Uses SE(3) Lie groups for mathematically correct spatial relationships
+- **🔄 Geometric Optimization**: Minimizes curvature on Riemannian manifolds for optimal layouts
+- **✨ Real-time Visualization**: Shows spatial understanding in live 3D geometry
 
-1. **Geometric Entity Processing**: Extracts spatial entities and relationships from text
-2. **SE(3) Invariant Attention**: Applies proper geometric transformations preserving spatial structure
-3. **Curvature Evolution**: Tracks convergence through geometric manifold optimization
-4. **3D Visualization**: Renders entity positions in interactive 3D space
+## 🌟 What This Enables
 
-## 🚀 Quick Start
+### The Spatial Intelligence Gap
+Current language models excel at:
+- ✅ "What is a keyboard?" → *An input device*
+- ❌ "Where is the keyboard relative to the monitor?" → *Spatial confusion*
 
-### Using the Space
+GASM bridges this gap through mathematical spatial reasoning.
 
-1. **Enter Text**: Input any text with spatial, temporal, or physical relationships
-2. **Enable Geometry**: Toggle geometric processing for enhanced analysis
-3. **View Results**: See entity extraction, 3D positioning, and curvature evolution
-4. **Explore Visualizations**: Interactive plots show geometric convergence
+### Real Applications
+This isn't just a demo - GASM addresses actual problems in:
+- **🤖 Robotics**: "Move the component above the platform" → Precise 3D coordinates
+- **🔬 Scientific Modeling**: "The electron orbits the nucleus" → Proper geometric relationships  
+- **🏗️ Engineering**: "Place the support between the beams" → Constraint satisfaction
+- **🥽 AR/VR**: Natural language to 3D scene understanding
 
-### Example Inputs
+## 🎯 Try It Yourself
 
-Try these examples to see GASM in action:
+### Watch GASM in Action
 
-```
-"The robotic arm moves the satellite component above the assembly platform while the crystal detector rotates around its central axis."
+Input any sentence with spatial relationships:
 
-"The electron orbits the nucleus while the magnetic field flows through the crystal lattice structure."
+> *"The ball lies left of the table next to the computer, while the book sits between the keyboard and the monitor."*
 
-"The ball lies left of the table next to the computer, while the book sits between the keyboard and the monitor."
-```
+**GASM Output:**
+- ✅ **6 entities identified**: ball, table, computer, book, keyboard, monitor
+- 🔗 **5 spatial relations**: left_of, next_to, between
+- 🌌 **3D geometric layout** with proper SE(3) positioning  
+- 📈 **Curvature evolution** showing geometric convergence
+
+### More Examples
+
+**🤖 Robotics**: *"The robotic arm moves the satellite component above the assembly platform."*
+
+**🔬 Scientific**: *"The electron orbits the nucleus while the magnetic field flows through the crystal."*  
+
+**🏠 Everyday**: *"The red car parks between two buildings near the park entrance."*
+
+### What You'll See
+1. **Advanced Entity Recognition**: Far beyond simple keyword matching
+2. **Spatial Relationship Extraction**: Understands "left of", "between", "above" in context  
+3. **3D Visualization**: Real geometric positioning in proper 3D space
+4. **Mathematical Convergence**: Curvature evolution showing optimization progress
 
 ## 📁 Project Structure
 
@@ -63,21 +80,40 @@ GASM-Huggingface/
 └── README.md               # This file
 ```
 
-## 🔧 Technical Implementation
+## 🧮 The Mathematics Behind GASM
 
-### Core Components
+### What Makes It Special
 
-1. **SE3InvariantAttention**: Mathematically correct SE(3) geodesic distance computation
-2. **EfficientCurvatureComputation**: Graph Laplacian-based discrete curvature analysis
-3. **ConstraintHandler**: Energy-based constraint satisfaction with Lagrange multipliers
-4. **RealGASMInterface**: Main processing interface with entity extraction
+Unlike traditional NLP that treats text as sequences of tokens, GASM understands geometry:
 
-### Key Features
+**1. SE(3) Invariant Processing**
+- Uses Special Euclidean Group SE(3) for proper 3D transformations
+- Maintains mathematical correctness under rotations and translations
+- Employs Lie group operations for geometric learning
 
-- **Robust Error Handling**: Graceful fallbacks at every processing step
-- **Dependency Management**: Works with or without PyTorch Geometric, Geomstats
-- **Memory Efficient**: Optimized for Space deployment constraints
-- **Real-time Processing**: Step-by-step debug output with progress tracking
+**2. Advanced Entity Recognition**  
+- **spaCy NLP**: Part-of-speech tagging + named entity recognition
+- **Semantic Filtering**: Domain-specific vocabularies (robotics, scientific, everyday)
+- **Contextual Understanding**: Extracts objects from spatial prepositions
+
+**3. Geometric Optimization**
+- **Geodesic Distances**: Shortest paths on SE(3) manifold
+- **Discrete Curvature**: Graph Laplacian eigenvalue-based computation
+- **Energy Minimization**: Constraint satisfaction via Lagrange multipliers
+
+### Technical Architecture
+
+```
+Text → spaCy NLP → Entity Extraction → Semantic Filtering
+  ↓
+SE(3) Embedding → Attention Mechanism → Geometric Refinement  
+  ↓
+Constraint Satisfaction → Curvature Optimization → 3D Visualization
+```
+
+### Why This Matters
+
+Most AI systems use simple word embeddings that lose spatial meaning. GASM preserves geometric relationships through mathematically principled operations, enabling true spatial understanding.
 
 ## 🎨 Visualizations
 
@@ -158,19 +194,64 @@ Perfect for analyzing:
 - **Curvature Computation**: Discrete Gaussian curvature via graph Laplacian
 - **Constraint Handling**: Energy minimization with Lagrange multipliers
 
-## 📄 License
+## 🚀 Why This Matters
 
-Licensed under CC-BY-NC 4.0. All rights reserved, Versino PsiOmega GmbH.
+### Current State of AI
+- ✅ Excellent at text understanding and generation
+- ✅ Great at image recognition and computer vision  
+- ❌ **Struggles with spatial reasoning from language**
+- ❌ **Can't bridge text ↔ 3D geometry gap**
 
-## 🙏 Acknowledgments
+### GASM's Contribution
+GASM represents a step toward AI that understands space the way humans do - not just as coordinates, but as meaningful geometric relationships between objects in the world.
 
-- HuggingFace for Spaces platform
-- PyTorch and PyTorch Geometric teams
-- Geomstats geometric computing library
-- Gradio for the intuitive interface framework
+**Applications on the horizon:**
+- 🤖 Robots that understand spatial instructions naturally
+- 🏗️ AI architects that reason about 3D spaces from descriptions  
+- 🔬 Scientific AI that models physical systems geometrically
+- 🎮 Game AI that understands spatial gameplay naturally
+
+## 🛠️ Local Development
+
+```bash
+git clone https://github.com/scheitelpunk/GASM-Huggingface
+cd GASM-Huggingface
+pip install -r requirements.txt
+python app.py
+```
+
+The system gracefully handles missing dependencies with intelligent fallbacks.
+
+## 🤝 Contributing
+
+This is active research in spatial AI! We welcome:
+- 🐛 Bug reports and edge cases
+- 💡 New spatial relationship types  
+- 🌍 Additional language support
+- 📊 Evaluation datasets
+- 🔧 Performance optimizations
+
+## 📄 License & Citation
+
+Licensed under CC-BY-NC 4.0. For research use, please cite:
+
+```bibtex
+@misc{gasm2024,
+  title={GASM: Geometric Attention for Spatial Understanding},
+  author={Michael Neuberger, Versino PsiOmega GmbH},
+  year={2025},
+  url={https://huggingface.co/spaces/scheitelpunk/GASM}
+}
+```
+
+## 🙏 Built With
+
+- 🤗 **Hugging Face Spaces** - Deployment platform
+- 🌐 **spaCy** - Advanced NLP processing
+- 🔢 **PyTorch** - Neural network framework  
+- 📊 **Gradio** - Interactive ML interfaces
+- 📐 **Geomstats** - Geometric computing
 
 ---
 
-**Made with ❤️ by the Versino PsiOmega development team**
-
-*Try the Space above to see geometric language processing in action!*
+*GASM: Where language meets geometry, and AI begins to understand space.* 🚀

@@ -1473,16 +1473,21 @@ def create_beautiful_interface():
         theme=gr.themes.Soft()
     ) as demo:
         
-        # Beautiful header with contact button
+        # Beautiful header with mathematical context
         gr.HTML("""
         <div class="main-header">
             <h1 style="font-size: 3em; margin-bottom: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                 🚀 GASM Enhanced
             </h1>
-            <h2 style="color: #555; margin-bottom: 20px;">Geometric Attention for Spatial & Mathematical Understanding</h2>
-            <div class="gpu-badge">💻 CPU Mode</div>
-            <div class="gpu-badge">🔧 ZeroGPU Fallback</div>
-            <div class="gpu-badge">🧠 Real Entity Extraction</div>
+            <h2 style="color: #555; margin-bottom: 15px;">Geometric Attention for Spatial & Mathematical Understanding</h2>
+            <p style="color: #666; font-size: 1.1em; margin-bottom: 20px; max-width: 800px; margin-left: auto; margin-right: auto;">
+                <strong>Bridging Natural Language & 3D Geometry</strong><br>
+                Transform text into geometric understanding using SE(3)-invariant neural architectures, 
+                geodesic distances, and curvature optimization on Riemannian manifolds.
+            </p>
+            <div class="gpu-badge">📐 SE(3) Invariant</div>
+            <div class="gpu-badge">🧠 Advanced NLP</div>
+            <div class="gpu-badge">📊 Real-time 3D</div>
             <br>
             <a href="mailto:neuberger@versino.de?subject=GASM Enhanced - Feedback&body=Hello,%0A%0AI tried your GASM Enhanced application and would like to share some feedback:%0A%0A" 
                class="contact-btn" style="text-decoration: none; color: white;">
@@ -1531,25 +1536,34 @@ def create_beautiful_interface():
                 with gr.Column(scale=1):
                     gr.HTML("""
                     <div class="feature-box">
-                        <h3 style="color: #667eea; margin-bottom: 15px;">💻 CPU Mode Active</h3>
+                        <h3 style="color: #667eea; margin-bottom: 15px;">🔬 What GASM Does</h3>
                         <ul style="list-style: none; padding: 0;">
                             <li style="padding: 8px 0; border-bottom: 1px solid #eee;">
-                                <strong>🔧 ZeroGPU Fallback</strong><br>
-                                <small>GPU allocation failed, using CPU processing</small>
+                                <strong>📐 SE(3) Geometry</strong><br>
+                                <small>Proper 3D rotations & translations using Lie groups</small>
                             </li>
                             <li style="padding: 8px 0; border-bottom: 1px solid #eee;">
-                                <strong>✅ Full Functionality</strong><br>
-                                <small>All features work without GPU</small>
+                                <strong>🧠 Advanced NLP</strong><br>
+                                <small>spaCy + semantic filtering for robust entity extraction</small>
                             </li>
                             <li style="padding: 8px 0; border-bottom: 1px solid #eee;">
-                                <strong>📊 Real Processing</strong><br>
-                                <small>Actual entity and relation extraction</small>
+                                <strong>📊 Curvature Optimization</strong><br>
+                                <small>Minimizes discrete curvature for optimal spatial layout</small>
                             </li>
                             <li style="padding: 8px 0;">
-                                <strong>🎯 Production Ready</strong><br>
-                                <small>Robust fallback system</small>
+                                <strong>🌌 Real-time 3D</strong><br>
+                                <small>Visualizes geometric relationships in proper 3D space</small>
                             </li>
                         </ul>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 10px;">
+                            <h4 style="color: #667eea; margin: 0 0 10px 0;">🎯 Try These Examples:</h4>
+                            <p style="font-size: 0.9em; color: #555; margin: 5px 0;">
+                                <strong>Robotics:</strong> "The arm moves the component above the platform"<br>
+                                <strong>Scientific:</strong> "The electron orbits the nucleus"<br>
+                                <strong>Everyday:</strong> "The book sits between keyboard and monitor"
+                            </p>
+                        </div>
                     </div>
                     """)
             
@@ -1588,12 +1602,33 @@ def create_beautiful_interface():
             label="🚀 Click to try these examples"
         )
         
-        # Beautiful footer
+        # Enhanced footer with mathematical context
         gr.HTML("""
         <div style="text-align: center; padding: 40px 20px; margin-top: 40px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; margin: 40px 20px;">
-            <h3 style="color: white; margin-bottom: 20px;">🔬 Progressive GASM Testing</h3>
-            <p style="color: rgba(255,255,255,0.7); margin-top: 20px;">
-                🚀 Real Entity Extraction • 📊 Live Visualizations • 🔍 Step-by-Step Debug
+            <h3 style="color: white; margin-bottom: 20px;">🧮 The Mathematics Behind GASM</h3>
+            <div style="display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 20px;">
+                <div style="color: rgba(255,255,255,0.9); margin: 10px;">
+                    <strong>SE(3) Manifold</strong><br>
+                    <small style="color: rgba(255,255,255,0.7);">3D rotations + translations</small>
+                </div>
+                <div style="color: rgba(255,255,255,0.9); margin: 10px;">
+                    <strong>Geodesic Distances</strong><br>
+                    <small style="color: rgba(255,255,255,0.7);">Shortest paths on manifolds</small>
+                </div>
+                <div style="color: rgba(255,255,255,0.9); margin: 10px;">
+                    <strong>Discrete Curvature</strong><br>
+                    <small style="color: rgba(255,255,255,0.7);">Graph Laplacian optimization</small>
+                </div>
+                <div style="color: rgba(255,255,255,0.9); margin: 10px;">
+                    <strong>Attention Mechanism</strong><br>
+                    <small style="color: rgba(255,255,255,0.7);">Geometric relationship learning</small>
+                </div>
+            </div>
+            <p style="color: rgba(255,255,255,0.8); font-style: italic;">
+                "Bridging the gap between natural language understanding and geometric reasoning"
+            </p>
+            <p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 15px;">
+                🚀 Advanced NLP • 📐 Riemannian Geometry • 🧠 Neural Architectures • 📊 Real-time Visualization
             </p>
         </div>
         """)
