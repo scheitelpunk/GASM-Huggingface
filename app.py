@@ -1893,16 +1893,27 @@ def create_beautiful_interface():
             outputs=[output_summary, curvature_plot, entity_3d_plot, detailed_output]
         )
         
-        # Enhanced examples
+        # Enhanced examples with cutting-edge domains
         gr.Examples(
             examples=[
-                ["The robotic arm moves the satellite component above the assembly platform while the crystal detector rotates around its central axis.", True, True, 256],
-                ["The electron orbits the nucleus while the magnetic field flows through the crystal lattice structure.", True, True, 256],
-                ["The ball lies left of the table next to the computer, while the book sits between the keyboard and the monitor.", True, True, 256],
-                ["First the reactor starts, then the coolant flows through the system, and finally the turbine begins rotating.", True, True, 256]
+                ["Dock the kinase inhibitor with the phenyl ring parallel to the hinge backbone.", True, True, 256],
+                ["Embed the fluxonium qubit 5 nm above the ground plane, aligned to the Φ = 0.5 Φ₀ sweet spot.", True, True, 256],
+                ["Arrange four THF molecules tetrahedrally around Li⁺, 2.1 Å Li–O distance.", True, True, 256],
+                ["Stack perovskite unit cells along ⟨110⟩ with 2 nm inter-layer gap.", True, True, 256],
+                ["Orient the Pt(111) terrace so CO binds atop, 1.8 Å Pt–C bond length.", True, True, 256],
+                ["Weave carbon nanotubes into a 3D lattice with 60° torsion for negative Poisson ratio.", True, True, 256],
+                ["Shape the magnetic flux surface into a D-shaped cross-section, R = 3.5 m, a = 1.2 m.", True, True, 256],
+                ["Pack the α-helix against the β-sheet at a 35° inter-domain angle.", True, True, 256],
+                ["Place the SQUID loop 10 μm above the Nb stripline, aligned to the magnetic bias line.", True, True, 256],
+                ["Segregate the fullerene domains 5 nm from the polymer backbone in vertical columns.", True, True, 256],
+                ["Define the SN2 trajectory along the C–O bond axis, 180° inversion angle.", True, True, 256],
+                ["Embed Si nanowires in a zig-zag pattern with 20 nm pitch to scatter phonons.", True, True, 256],
+                ["Place the aluminum bracket flush against the jig, 5 cm left of the drill bit.", True, True, 256],
+                ["Shift the electronics pallet three bays toward aisle C, top tier only.", True, True, 256],
+                ["Float the navy couch 30 cm from the bay window, facing the TV.", True, True, 256]
             ],
             inputs=[text_input, enable_geometry, show_visualization, max_length],
-            label="🚀 Click to try these examples"
+            label="🧬 Click to try cutting-edge domain examples"
         )
         
         # Simple footer CTA for robotics/simulation pipeline
