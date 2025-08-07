@@ -1588,9 +1588,15 @@ def real_gasm_process_text(
             real_gasm_process_text.cache = {}
         
         if cache_key in real_gasm_process_text.cache:
-            cached_result = real_gasm_process_text.cache[cache_key].copy()
-            cached_result['summary'] = "🚀 **Cached Result** (Enhanced)\n\n" + cached_result['summary']
-            return cached_result
+            cached_result = real_gasm_process_text.cache[cache_key]
+            summary, curvature_plot, entity_3d_plot, detailed_json = cached_result
+            enhanced_summary = "🚀 **Cached Result** (Enhanced)\n\n" + summary
+            return (
+                enhanced_summary,
+                curvature_plot, 
+                entity_3d_plot,
+                detailed_json
+            )
         
         # Try GPU first with mixed precision
         try:
@@ -1604,33 +1610,31 @@ def real_gasm_process_text(
         
         # Cache successful results (limit cache size for HF)
         if len(real_gasm_process_text.cache) < 20:
-            real_gasm_process_text.cache[cache_key] = result.copy()
+            real_gasm_process_text.cache[cache_key] = result
         
         return result
         
     except Exception as e:
         logger.error(f"All processing failed: {e}")
-        return {
-            'summary': f"❌ Processing failed: {str(e)}",
-            'curvature_plot': None,
-            'entity_3d_plot': None,
-            'detailed_json': json.dumps({"error": str(e)}, indent=2)
-        }
+        return (
+            f"❌ Processing failed: {str(e)}",
+            None,
+            None,
+            json.dumps({"error": str(e)}, indent=2)
+        )
 
 def real_gasm_process_text_gpu_enhanced(text, enable_geometry, show_visualization, max_length):
     """GPU processing with mixed precision and optimizations"""
     with torch.cuda.amp.autocast():
-        result = real_gasm_process_text_gpu(text, enable_geometry, show_visualization, max_length)
-        if isinstance(result['summary'], str):
-            result['summary'] = "🚀 **GPU Enhanced** (Mixed Precision)\n\n" + result['summary']
-        return result
+        summary, curvature_plot, entity_3d_plot, detailed_json = real_gasm_process_text_gpu(text, enable_geometry, show_visualization, max_length)
+        enhanced_summary = "🚀 **GPU Enhanced** (Mixed Precision)\n\n" + summary
+        return (enhanced_summary, curvature_plot, entity_3d_plot, detailed_json)
 
 def real_gasm_process_text_cpu_enhanced(text, enable_geometry, show_visualization, max_length):
     """CPU processing with optimizations"""
-    result = real_gasm_process_text_cpu(text, enable_geometry, show_visualization, max_length)
-    if isinstance(result['summary'], str):
-        result['summary'] = "⚡ **CPU Enhanced** (Optimized)\n\n" + result['summary']
-    return result
+    summary, curvature_plot, entity_3d_plot, detailed_json = real_gasm_process_text_cpu(text, enable_geometry, show_visualization, max_length)
+    enhanced_summary = "⚡ **CPU Enhanced** (Optimized)\n\n" + summary
+    return (enhanced_summary, curvature_plot, entity_3d_plot, detailed_json)
 
 
 def insert_example_text(example_text):
