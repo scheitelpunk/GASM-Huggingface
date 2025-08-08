@@ -45,6 +45,15 @@ except Exception as e:
     nlp = None
     print(f"❌ spaCy error: {e}")
 
+# Import weight persistence utilities
+try:
+    from utils_weights import handle_gasm_weights, get_weights_info, should_force_regenerate
+    WEIGHT_UTILS_AVAILABLE = True
+    logger.info("✅ Weight persistence utilities loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ Weight utilities not available: {e}")
+    WEIGHT_UTILS_AVAILABLE = False
+
 # Import real GASM components from core file
 try:
     # Carefully re-enable GASM import with error isolation
@@ -422,13 +431,18 @@ class RealGASMInterface:
         return relations
 
     def _initialize_real_gasm(self):
-        """Initialize real GASM model with careful error handling"""
+        """Initialize real GASM model with automatic weight persistence"""
         if not GASM_AVAILABLE:
             logger.warning("GASM core not available, using simulation")
             return False
         
         try:
-            logger.info("Initializing real GASM model...")
+            logger.info("Initializing real GASM model with weight persistence...")
+            
+            # Check weight file status before initialization
+            if WEIGHT_UTILS_AVAILABLE:
+                weights_info = get_weights_info("gasm_weights.pth")
+                logger.info(f"🔍 Weight file status: exists={weights_info['exists']}, size={weights_info['size_mb']}MB")
             
             # Initialize with conservative parameters for stability
             self.gasm_model = GASM(
@@ -443,8 +457,16 @@ class RealGASMInterface:
             # Always use CPU for now to avoid GPU allocation issues
             self.device = torch.device('cpu')
             self.gasm_model = self.gasm_model.to(self.device)
-            self.gasm_model.eval()  # Set to evaluation mode
             
+            # Handle weight persistence (generate/load weights)
+            if WEIGHT_UTILS_AVAILABLE:
+                weights_handled = handle_gasm_weights(self.gasm_model, self.device, "gasm_weights.pth")
+                if not weights_handled:
+                    logger.warning("⚠️ Weight persistence failed, continuing with random weights")
+            else:
+                logger.warning("⚠️ Weight utilities not available, using random weights")
+            
+            self.gasm_model.eval()  # Set to evaluation mode
             logger.info(f"GASM model initialized successfully on {self.device}")
             
             # Test with small tensor to verify everything works
@@ -1962,6 +1984,22 @@ def create_beautiful_interface():
     return demo
 
 if __name__ == "__main__":
+    # Log weight persistence status on startup
+    if WEIGHT_UTILS_AVAILABLE:
+        from utils_weights import get_weights_info, should_force_regenerate
+        weights_info = get_weights_info("gasm_weights.pth")
+        force_regen = should_force_regenerate()
+        
+        print("=" * 60)
+        print("🚀 GASM Weight Persistence Status")
+        print("=" * 60)
+        print(f"📁 Weight file: gasm_weights.pth")
+        print(f"✅ Exists: {weights_info['exists']}")
+        if weights_info['exists']:
+            print(f"📊 Size: {weights_info['size_mb']} MB")
+        print(f"🔄 Force regeneration: {force_regen}")
+        print("=" * 60)
+    
     demo = create_beautiful_interface()
     demo.queue(max_size=20)
     

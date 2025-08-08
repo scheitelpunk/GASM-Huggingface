@@ -18,9 +18,23 @@ import json
 import os
 from contextlib import asynccontextmanager
 
-from gasm_llm_layer import GASMEnhancedLLM, GASMTokenEmbedding
-from gasm.utils import check_se3_invariance
-from gasm.core import GASM
+try:
+    from gasm_llm_layer import GASMEnhancedLLM, GASMTokenEmbedding
+    from gasm.utils import check_se3_invariance
+    from gasm.core import GASM
+    GASM_LLM_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"GASM LLM layer not available: {e}")
+    GASM_LLM_AVAILABLE = False
+
+# Import weight persistence utilities
+try:
+    from utils_weights import handle_gasm_weights, get_weights_info, should_force_regenerate
+    WEIGHT_UTILS_AVAILABLE = True
+    logger.info("✅ Weight persistence utilities loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ Weight utilities not available: {e}")
+    WEIGHT_UTILS_AVAILABLE = False
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -38,15 +52,51 @@ async def lifespan(app: FastAPI):
     global model_instance
     
     # Startup
-    logger.info("Loading GASM-LLM model...")
+    logger.info("Loading GASM-LLM model with weight persistence...")
+    
+    # Log weight persistence status
+    if WEIGHT_UTILS_AVAILABLE:
+        weights_info = get_weights_info("gasm_weights.pth")
+        force_regen = should_force_regenerate()
+        
+        logger.info("=" * 60)
+        logger.info("🚀 GASM Weight Persistence Status (FastAPI)")
+        logger.info("=" * 60)
+        logger.info(f"📁 Weight file: gasm_weights.pth")
+        logger.info(f"✅ Exists: {weights_info['exists']}")
+        if weights_info['exists']:
+            logger.info(f"📊 Size: {weights_info['size_mb']} MB")
+        logger.info(f"🔄 Force regeneration: {force_regen}")
+        logger.info("=" * 60)
+    
     try:
-        model_instance = GASMEnhancedLLM(
-            base_model_name="distilbert-base-uncased",
-            gasm_hidden_dim=256,
-            gasm_output_dim=128,
-            enable_geometry=True
-        )
-        logger.info("Model loaded successfully")
+        if not GASM_LLM_AVAILABLE:
+            logger.warning("GASM LLM layer not available, skipping model initialization")
+            model_instance = None
+        else:
+            model_instance = GASMEnhancedLLM(
+                base_model_name="distilbert-base-uncased",
+                gasm_hidden_dim=256,
+                gasm_output_dim=128,
+                enable_geometry=True
+            )
+            
+            # Apply weight persistence to the GASM component if available
+            if (WEIGHT_UTILS_AVAILABLE and 
+                hasattr(model_instance, 'gasm_layer') and 
+                hasattr(model_instance.gasm_layer, 'gasm_model')):
+                
+                device = next(model_instance.gasm_layer.gasm_model.parameters()).device
+                weights_handled = handle_gasm_weights(
+                    model_instance.gasm_layer.gasm_model, 
+                    device, 
+                    "gasm_weights.pth"
+                )
+                if not weights_handled:
+                    logger.warning("⚠️ Weight persistence failed for FastAPI GASM model")
+            
+            logger.info("Model loaded successfully")
+            
     except Exception as e:
         logger.error(f"Failed to load model: {e}")
         model_instance = None

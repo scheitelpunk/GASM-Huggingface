@@ -63,6 +63,11 @@ Input any sentence with spatial relationships:
 
 **🏠 Everyday**: *"The red car parks between two buildings near the park entrance."*
 
+**🧬 Cutting-Edge Domains**: Try advanced examples from drug design, quantum computing, and manufacturing:
+- *"Dock the kinase inhibitor with the phenyl ring parallel to the hinge backbone."*
+- *"Embed the fluxonium qubit 5 nm above the ground plane, aligned to the Φ = 0.5 Φ₀ sweet spot."*
+- *"Place the aluminum bracket flush against the jig, 5 cm left of the drill bit."*
+
 ### What You'll See
 1. **Advanced Entity Recognition**: Far beyond simple keyword matching
 2. **Spatial Relationship Extraction**: Understands "left of", "between", "above" in context  
@@ -76,7 +81,12 @@ GASM-Huggingface/
 ├── app.py                    # Main Gradio application with complete interface
 ├── gasm_core.py             # Core GASM implementation with SE(3) math
 ├── fastapi_endpoint.py      # Optional API endpoints (standalone)
+├── utils_weights.py         # Weight persistence utilities (auto-save/load)
+├── manage_weights.py        # CLI tool for weight management
+├── test_weight_persistence.py # Weight persistence test suite
 ├── requirements.txt         # Python dependencies
+├── gasm_weights.pth         # Auto-generated model weights (gitignored)
+├── WEIGHT_PERSISTENCE_README.md # Weight system documentation
 └── README.md               # This file
 ```
 
@@ -98,8 +108,13 @@ Unlike traditional NLP that treats text as sequences of tokens, GASM understands
 
 **3. Geometric Optimization**
 - **Geodesic Distances**: Shortest paths on SE(3) manifold
-- **Discrete Curvature**: Graph Laplacian eigenvalue-based computation
-- **Energy Minimization**: Constraint satisfaction via Lagrange multipliers
+- **Discrete Curvature**: Graph Laplacian-based curvature minimization
+- **Attention Mechanisms**: SE(3)-invariant geometric relationship learning
+
+**4. Weight Persistence & Reproducibility**
+- **Deterministic Weights**: Fixed seed (42) ensures reproducible results
+- **Automatic Save/Load**: Persistent model state across sessions
+- **Force Regeneration**: Environment variables and CLI flags for control
 
 ### Technical Architecture
 
@@ -213,12 +228,62 @@ GASM represents a step toward AI that understands space the way humans do - not 
 
 ## 🛠️ Local Development
 
+### Quick Start
+
 ```bash
 git clone https://github.com/scheitelpunk/GASM-Huggingface
 cd GASM-Huggingface
 pip install -r requirements.txt
 python app.py
 ```
+
+### ⚡ Weight Persistence System
+
+GASM now features **automatic weight persistence** for consistent, reproducible results:
+
+**🎯 First Run**: Automatically generates initial weights with deterministic seed
+```bash
+python app.py
+# ✅ Generated initial GASM weights and saved to gasm_weights.pth
+```
+
+**🔄 Subsequent Runs**: Loads existing weights for consistent behavior
+```bash  
+python app.py
+# ✅ Loaded GASM weights from gasm_weights.pth
+```
+
+**🔧 Weight Management CLI**:
+```bash
+# Check weight status
+python manage_weights.py status
+
+# Force regenerate weights
+python manage_weights.py generate --force
+
+# Remove weight file
+python manage_weights.py remove
+```
+
+**🔄 Force Regeneration Options**:
+```bash
+# Via environment variable
+GASM_FORCE_REGEN=true python app.py
+
+# Via CLI flag  
+python app.py --force-regen
+```
+
+### 🧪 Testing Weight Persistence
+```bash
+python test_weight_persistence.py
+```
+
+**Benefits**:
+- ✅ **Reproducible Results**: Same weights = same outputs across runs
+- ⚡ **Faster Startup**: No recomputation after first initialization  
+- 🎲 **Deterministic**: Fixed seed (42) ensures identical weights
+- 🛡️ **Robust Fallback**: Continues with random weights if persistence fails
 
 The system gracefully handles missing dependencies with intelligent fallbacks.
 
@@ -230,6 +295,21 @@ This is active research in spatial AI! We welcome:
 - 🌍 Additional language support
 - 📊 Evaluation datasets
 - 🔧 Performance optimizations
+- 🧪 Weight persistence improvements and testing
+
+### Development Setup
+```bash
+# Clone and setup
+git clone https://github.com/scheitelpunk/GASM-Huggingface
+cd GASM-Huggingface
+pip install -r requirements.txt
+
+# Test weight persistence system
+python test_weight_persistence.py
+
+# Check current weight status
+python manage_weights.py status
+```
 
 ## 📄 License & Citation
 
@@ -248,9 +328,11 @@ Licensed under CC-BY-NC 4.0. For research use, please cite:
 
 - 🤗 **Hugging Face Spaces** - Deployment platform
 - 🌐 **spaCy** - Advanced NLP processing
-- 🔢 **PyTorch** - Neural network framework  
-- 📊 **Gradio** - Interactive ML interfaces
-- 📐 **Geomstats** - Geometric computing
+- 🔢 **PyTorch** - Neural network framework with weight persistence
+- 📊 **Gradio 4.16.0** - Interactive ML interfaces  
+- 📐 **Geomstats** - Geometric computing on manifolds
+- ⚡ **FastAPI** - High-performance API endpoints
+- 🧪 **Custom Weight Management** - Reproducible model persistence
 
 ---
 

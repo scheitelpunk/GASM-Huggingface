@@ -30,6 +30,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+*venv*
 
 # PyInstaller
 *.manifest
@@ -157,6 +158,10 @@ runs/
 logs/
 tensorboard/
 wandb/
+
+# GASM Weight Files (generated automatically)
+gasm_weights.pth
+test_gasm_weights.pth
 
 # Data files
 data/
