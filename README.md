@@ -330,6 +330,7 @@ Licensed under CC-BY-NC 4.0. For research use, please cite:
   url={https://huggingface.co/spaces/scheitelpunk/GASM}
 }
 ```
+gasm_weights.pth is also licensed CC-BY-NC 4.0; commercial use requires a separate license
 
 ## 🙏 Built With
 
