@@ -163,6 +163,9 @@ wandb/
 gasm_weights.pth
 test_gasm_weights.pth
 
+# GASM Development Tools (not deployed to HF Space)
+dev-tools/
+
 # Data files
 data/
 datasets/

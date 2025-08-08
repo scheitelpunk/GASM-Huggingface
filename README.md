@@ -82,11 +82,13 @@ GASM-Huggingface/
 ├── gasm_core.py             # Core GASM implementation with SE(3) math
 ├── fastapi_endpoint.py      # Optional API endpoints (standalone)
 ├── utils_weights.py         # Weight persistence utilities (auto-save/load)
-├── manage_weights.py        # CLI tool for weight management
-├── test_weight_persistence.py # Weight persistence test suite
 ├── requirements.txt         # Python dependencies
 ├── gasm_weights.pth         # Auto-generated model weights (gitignored)
-├── WEIGHT_PERSISTENCE_README.md # Weight system documentation
+├── dev-tools/               # Development tools (gitignored, not on HF Space)
+│   ├── manage_weights.py    # CLI tool for weight management
+│   ├── test_weight_persistence.py # Weight persistence test suite
+│   ├── WEIGHT_PERSISTENCE_README.md # Detailed technical documentation
+│   └── README.md           # Dev tools documentation
 └── README.md               # This file
 ```
 
@@ -253,16 +255,16 @@ python app.py
 # ✅ Loaded GASM weights from gasm_weights.pth
 ```
 
-**🔧 Weight Management CLI**:
+**🔧 Weight Management CLI** (Development):
 ```bash
 # Check weight status
-python manage_weights.py status
+python dev-tools/manage_weights.py status
 
 # Force regenerate weights
-python manage_weights.py generate --force
+python dev-tools/manage_weights.py generate --force
 
 # Remove weight file
-python manage_weights.py remove
+python dev-tools/manage_weights.py remove
 ```
 
 **🔄 Force Regeneration Options**:
@@ -274,9 +276,9 @@ GASM_FORCE_REGEN=true python app.py
 python app.py --force-regen
 ```
 
-### 🧪 Testing Weight Persistence
+### 🧪 Testing Weight Persistence (Development)
 ```bash
-python test_weight_persistence.py
+python dev-tools/test_weight_persistence.py
 ```
 
 **Benefits**:
@@ -304,12 +306,17 @@ git clone https://github.com/scheitelpunk/GASM-Huggingface
 cd GASM-Huggingface
 pip install -r requirements.txt
 
-# Test weight persistence system
-python test_weight_persistence.py
+# Test weight persistence system (development tools)
+python dev-tools/test_weight_persistence.py
 
-# Check current weight status
-python manage_weights.py status
+# Check current weight status (development tools)
+python dev-tools/manage_weights.py status
+
+# Force regenerate weights (development tools)
+python dev-tools/manage_weights.py generate --force
 ```
+
+**Note**: Development tools in `dev-tools/` are **not deployed to HF Space** but are essential for local development and testing.
 
 ## 📄 License & Citation
 
