@@ -14,6 +14,7 @@ import seaborn as sns
 from datetime import datetime
 import logging
 import torch
+import os
 from PIL import Image
 
 # Configure logging first
@@ -1749,15 +1750,41 @@ def get_container_debug_info():
     
     return "\n".join(debug_info)
 
+def check_weight_file_status():
+    """Check if weight file exists and return status"""
+    import os
+    from datetime import datetime
+    
+    weight_file = "gasm_weights.pth"
+    
+    if os.path.exists(weight_file):
+        file_size = os.path.getsize(weight_file)
+        file_size_mb = file_size / (1024 * 1024)
+        mod_time = datetime.fromtimestamp(os.path.getmtime(weight_file))
+        
+        return f"✅ **Weight file available:** `{weight_file}` ({file_size_mb:.2f} MB)\n📅 **Modified:** {mod_time.strftime('%Y-%m-%d %H:%M:%S')}\n\n🔽 **Click 'Download Weight File' button to download**"
+    else:
+        return f"❌ **Weight file not found:** `{weight_file}`\n\n💡 **Try running GASM analysis first to generate weights**"
+
 def download_weight_file():
     """Download the current weight file if it exists"""
     import os
+    from datetime import datetime
     
     weight_file = "gasm_weights.pth"
+    
     if os.path.exists(weight_file):
+        file_size = os.path.getsize(weight_file)
+        file_size_mb = file_size / (1024 * 1024)
+        mod_time = datetime.fromtimestamp(os.path.getmtime(weight_file))
+        
+        print(f"📥 Weight file download: {weight_file} ({file_size_mb:.2f} MB, modified: {mod_time})")
+        logger.info(f"📥 Weight file download requested: {weight_file} ({file_size} bytes)")
+        
         return weight_file
     else:
-        # Return None if file doesn't exist
+        print("❌ Weight file not found - model may not be initialized yet")
+        logger.warning("Weight file download requested but file doesn't exist")
         return None
 
 def create_beautiful_interface():
@@ -2005,25 +2032,35 @@ def create_beautiful_interface():
                     lines=15
                 )
         
-        # Container Debug & Weight Download Section
-        with gr.Accordion("🔍 Development Tools (Debug & Download)", open=False):
+        # Container Debug & Weight Download Section  
+        with gr.Accordion("🔍 Development Tools (Debug & Download)", open=False, elem_classes="feature-box"):
+            gr.HTML("<p style='color: white; margin-bottom: 15px;'>🛠️ <strong>Development tools for debugging and downloading GASM weight files.</strong></p>")
+            
             with gr.Row():
-                debug_button = gr.Button("🔍 Get Container Debug Info", variant="secondary")
+                status_button = gr.Button("📊 Check Weight File Status", variant="secondary")
                 download_button = gr.Button("⬇️ Download Weight File", variant="primary")
+                debug_button = gr.Button("🔍 Get Container Debug Info", variant="secondary")
             
+            weight_status = gr.Markdown(label="Weight File Status")
             debug_output = gr.Markdown(label="Debug Information")
-            download_file = gr.File(label="Downloaded Weight File", visible=False)
+            download_file = gr.File(label="Downloaded Weight File", visible=True)
             
-            debug_button.click(
-                fn=get_container_debug_info,
+            status_button.click(
+                fn=check_weight_file_status,
                 inputs=[],
-                outputs=debug_output
+                outputs=weight_status
             )
             
             download_button.click(
                 fn=download_weight_file,
                 inputs=[],
                 outputs=download_file
+            )
+            
+            debug_button.click(
+                fn=get_container_debug_info,
+                inputs=[],
+                outputs=debug_output
             )
         
         # Enhanced examples with cutting-edge domains - placed after results
@@ -2120,6 +2157,28 @@ if __name__ == "__main__":
     
     demo = create_beautiful_interface()
     demo.queue(max_size=20)
+    
+    # Check if we should start FastAPI alongside Gradio
+    start_fastapi = os.getenv('ENABLE_FASTAPI', 'false').lower() == 'true'
+    
+    if start_fastapi:
+        print("🚀 Starting both Gradio and FastAPI...")
+        
+        # Start FastAPI in background thread
+        import threading
+        import uvicorn
+        
+        def run_fastapi():
+            try:
+                import fastapi_endpoint  # This imports and creates the FastAPI app
+                uvicorn.run("fastapi_endpoint:app", host="0.0.0.0", port=8000, log_level="info")
+            except Exception as e:
+                print(f"FastAPI failed to start: {e}")
+        
+        fastapi_thread = threading.Thread(target=run_fastapi, daemon=True)
+        fastapi_thread.start()
+        print("📊 FastAPI started on port 8000")
+        print("🔗 Download endpoint: https://scheitelpunk-gasm-dev.hf.space:8000/download-weights")
     
     # Fix for Hugging Face Spaces deployment
     try:
