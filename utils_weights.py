@@ -98,6 +98,15 @@ def handle_gasm_weights(model: torch.nn.Module, device: torch.device,
     force_regen = should_force_regenerate()
     weights_exist = os.path.exists(weights_path)
     
+    # Debug info for HF Space troubleshooting
+    current_dir = os.getcwd()
+    logger.info(f"🔍 DEBUG - Current working directory: {current_dir}")
+    logger.info(f"🔍 DEBUG - Weight file path: {os.path.abspath(weights_path)}")
+    logger.info(f"🔍 DEBUG - Weight file exists: {weights_exist}")
+    if weights_exist:
+        file_size = os.path.getsize(weights_path)
+        logger.info(f"🔍 DEBUG - Weight file size: {file_size} bytes")
+    
     # Case 1: Force regeneration requested
     if force_regen:
         if weights_exist:

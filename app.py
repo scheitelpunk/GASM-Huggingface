@@ -461,10 +461,15 @@ class RealGASMInterface:
             # Handle weight persistence (generate/load weights)
             if WEIGHT_UTILS_AVAILABLE:
                 weights_handled = handle_gasm_weights(self.gasm_model, self.device, "gasm_weights.pth")
-                if not weights_handled:
+                if weights_handled:
+                    logger.info("🎯 Weight persistence successful - model will have consistent behavior")
+                    print("🎯 Weight persistence successful - model will have consistent behavior")
+                else:
                     logger.warning("⚠️ Weight persistence failed, continuing with random weights")
+                    print("⚠️ Weight persistence failed, continuing with random weights")
             else:
                 logger.warning("⚠️ Weight utilities not available, using random weights")
+                print("⚠️ Weight utilities not available, using random weights")
             
             self.gasm_model.eval()  # Set to evaluation mode
             logger.info(f"GASM model initialized successfully on {self.device}")
@@ -1663,6 +1668,87 @@ def insert_example_text(example_text):
     """Function to return example text for insertion"""
     return example_text
 
+def get_container_debug_info():
+    """Get debug information about the container and weight files"""
+    import os
+    import sys
+    import glob
+    from datetime import datetime
+    
+    debug_info = []
+    debug_info.append("🔍 **Container Debug Information**\n")
+    
+    # Working directory
+    cwd = os.getcwd()
+    debug_info.append(f"📁 **Working Directory:** `{cwd}`\n")
+    
+    # List files in current directory
+    debug_info.append("📂 **Files in Working Directory:**")
+    try:
+        files = os.listdir(cwd)
+        for file in sorted(files):
+            file_path = os.path.join(cwd, file)
+            if os.path.isfile(file_path):
+                size = os.path.getsize(file_path)
+                size_mb = size / (1024 * 1024)
+                mod_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+                debug_info.append(f"  - `{file}` ({size_mb:.2f} MB, {mod_time.strftime('%Y-%m-%d %H:%M:%S')})")
+            else:
+                debug_info.append(f"  - `{file}/` (directory)")
+    except Exception as e:
+        debug_info.append(f"  - Error listing files: {e}")
+    
+    debug_info.append("")
+    
+    # Weight file specific info
+    weight_file = "gasm_weights.pth"
+    debug_info.append("⚖️ **Weight File Status:**")
+    
+    if os.path.exists(weight_file):
+        size = os.path.getsize(weight_file)
+        size_mb = size / (1024 * 1024)
+        mod_time = datetime.fromtimestamp(os.path.getmtime(weight_file))
+        abs_path = os.path.abspath(weight_file)
+        
+        debug_info.append(f"  - ✅ **Exists:** Yes")
+        debug_info.append(f"  - 📊 **Size:** {size_mb:.2f} MB ({size:,} bytes)")
+        debug_info.append(f"  - 📍 **Full Path:** `{abs_path}`")
+        debug_info.append(f"  - 🕐 **Modified:** {mod_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        # Try to get file permissions
+        try:
+            import stat
+            file_stat = os.stat(weight_file)
+            permissions = stat.filemode(file_stat.st_mode)
+            debug_info.append(f"  - 🔐 **Permissions:** {permissions}")
+        except:
+            pass
+            
+    else:
+        debug_info.append(f"  - ❌ **Exists:** No")
+    
+    debug_info.append("")
+    
+    # System info
+    debug_info.append("🖥️ **System Information:**")
+    debug_info.append(f"  - 🐍 **Python:** {sys.version.split()[0]}")
+    
+    try:
+        import torch
+        debug_info.append(f"  - 🔥 **PyTorch:** {torch.__version__}")
+        debug_info.append(f"  - 💻 **CUDA Available:** {torch.cuda.is_available()}")
+    except:
+        debug_info.append(f"  - 🔥 **PyTorch:** Not available")
+    
+    # Environment variables related to HF
+    debug_info.append(f"  - 🌍 **Environment:**")
+    hf_vars = ['SPACE_ID', 'SPACE_AUTHOR_NAME', 'SPACE_REPO_NAME']
+    for var in hf_vars:
+        value = os.getenv(var, 'Not set')
+        debug_info.append(f"    - {var}: {value}")
+    
+    return "\n".join(debug_info)
+
 def create_beautiful_interface():
     """Create a beautiful Gradio interface"""
     
@@ -1907,6 +1993,17 @@ def create_beautiful_interface():
                     label="",
                     lines=15
                 )
+        
+        # Container Debug Section
+        with gr.Accordion("🔍 Container Debug Info (Development)", open=False):
+            debug_button = gr.Button("🔍 Get Container Debug Info", variant="secondary")
+            debug_output = gr.Markdown(label="Debug Information")
+            
+            debug_button.click(
+                fn=get_container_debug_info,
+                inputs=[],
+                outputs=debug_output
+            )
         
         # Enhanced examples with cutting-edge domains - placed after results
         gr.HTML("<h3 style='color: white; margin: 30px 0 15px 0; text-align: center;'>🧬 Try These Cutting-Edge Examples</h3>")
