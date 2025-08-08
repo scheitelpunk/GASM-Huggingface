@@ -159,10 +159,6 @@ logs/
 tensorboard/
 wandb/
 
-# GASM Weight Files (generated automatically)
-gasm_weights.pth
-test_gasm_weights.pth
-
 # GASM Development Tools (not deployed to HF Space)
 dev-tools/
 
