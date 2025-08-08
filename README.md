@@ -236,7 +236,7 @@ This is active research in spatial AI! We welcome:
 Licensed under CC-BY-NC 4.0. For research use, please cite:
 
 ```bibtex
-@misc{gasm2024,
+@misc{gasm2025,
   title={GASM: Geometric Attention for Spatial Understanding},
   author={Michael Neuberger, Versino PsiOmega GmbH},
   year={2025},
@@ -255,3 +255,5 @@ Licensed under CC-BY-NC 4.0. For research use, please cite:
 ---
 
 *GASM: Where language meets geometry, and AI begins to understand space.* 🚀
+
+Built by Michael Neuberger, Versino PsiOmega GmbH
