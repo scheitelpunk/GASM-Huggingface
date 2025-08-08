@@ -1892,12 +1892,10 @@ def create_beautiful_interface():
             examples=[
                 ["Dock the kinase inhibitor with the phenyl ring parallel to the hinge backbone.", True, True, 256],
                 ["Embed the fluxonium qubit 5 nm above the ground plane, aligned to the Φ = 0.5 Φ₀ sweet spot.", True, True, 256],
-                ["Arrange four THF molecules tetrahedrally around Li⁺, 2.1 Å Li–O distance.", True, True, 256],
+                ["Place four THF molecules in a tetrahedral arrangement around a central lithium (Li) atom, ensuring each lithium-oxygen (Li–O) distance is precisely 2.1 Ångström.", True, True, 256],
                 ["Stack perovskite unit cells along ⟨110⟩ with 2 nm inter-layer gap.", True, True, 256],
-                ["Orient the Pt(111) terrace so CO binds atop, 1.8 Å Pt–C bond length.", True, True, 256],
                 ["Weave carbon nanotubes into a 3D lattice with 60° torsion for negative Poisson ratio.", True, True, 256],
                 ["Shape the magnetic flux surface into a D-shaped cross-section, R = 3.5 m, a = 1.2 m.", True, True, 256],
-                ["Pack the α-helix against the β-sheet at a 35° inter-domain angle.", True, True, 256],
                 ["Place the SQUID loop 10 μm above the Nb stripline, aligned to the magnetic bias line.", True, True, 256],
                 ["Segregate the fullerene domains 5 nm from the polymer backbone in vertical columns.", True, True, 256],
                 ["Define the SN2 trajectory along the C–O bond axis, 180° inversion angle.", True, True, 256],
