@@ -1954,7 +1954,7 @@ def create_beautiful_interface():
                 🚀 Advanced NLP • 📐 Riemannian Geometry • 🧠 Neural Architectures • 📊 Real-time Visualization
             </p>
             <p style="color: rgba(255,255,255,0.4); font-size: 0.9em; margin-top: 15px;">
-                🧠 Versino PsiOmega • https://psiomega.versino.de
+                🧠 Versino PsiOmega • https://psiomega.versino.de • License: CC-BY-NC 4.0, all rights reserved
             </p>
         </div>
         """)
