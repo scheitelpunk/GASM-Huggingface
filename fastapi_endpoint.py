@@ -622,6 +622,97 @@ async def batch_process(
         )
 
 
+# Development endpoints for weight management
+@app.get("/download-weights")
+async def download_weights():
+    """
+    Download the current GASM weight file
+    """
+    import os
+    from fastapi.responses import FileResponse
+    
+    weight_file = "gasm_weights.pth"
+    
+    if not os.path.exists(weight_file):
+        raise HTTPException(
+            status_code=404, 
+            detail="Weight file not found. Model may not be initialized yet."
+        )
+    
+    try:
+        file_size = os.path.getsize(weight_file)
+        logger.info(f"📥 Weight file download requested: {weight_file} ({file_size} bytes)")
+        
+        return FileResponse(
+            weight_file,
+            filename="gasm_weights.pth",
+            media_type="application/octet-stream",
+            headers={
+                "Content-Description": "GASM Model Weights",
+                "Content-Disposition": "attachment; filename=gasm_weights.pth"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error downloading weights: {e}")
+        raise HTTPException(status_code=500, detail=f"Error downloading weights: {str(e)}")
+
+@app.get("/debug-info")
+async def debug_info():
+    """
+    Get container debug information
+    """
+    import os
+    import sys
+    from datetime import datetime
+    
+    try:
+        debug_data = {
+            "container_info": {
+                "working_directory": os.getcwd(),
+                "python_version": sys.version,
+                "weight_file_exists": os.path.exists("gasm_weights.pth")
+            },
+            "files": [],
+            "weight_file": {},
+            "system": {
+                "cuda_available": torch.cuda.is_available() if 'torch' in globals() else False
+            }
+        }
+        
+        # List files in working directory
+        try:
+            for file in sorted(os.listdir(".")):
+                file_path = os.path.join(".", file)
+                if os.path.isfile(file_path):
+                    stat = os.stat(file_path)
+                    debug_data["files"].append({
+                        "name": file,
+                        "size_bytes": stat.st_size,
+                        "size_mb": round(stat.st_size / (1024 * 1024), 2),
+                        "modified": datetime.fromtimestamp(stat.st_mtime).isoformat()
+                    })
+        except Exception as e:
+            debug_data["files_error"] = str(e)
+        
+        # Weight file specific info
+        weight_file = "gasm_weights.pth"
+        if os.path.exists(weight_file):
+            stat = os.stat(weight_file)
+            debug_data["weight_file"] = {
+                "exists": True,
+                "size_bytes": stat.st_size,
+                "size_mb": round(stat.st_size / (1024 * 1024), 2),
+                "full_path": os.path.abspath(weight_file),
+                "modified": datetime.fromtimestamp(stat.st_mtime).isoformat()
+            }
+        else:
+            debug_data["weight_file"] = {"exists": False}
+        
+        return debug_data
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting debug info: {str(e)}")
+
 # Error handlers
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc):

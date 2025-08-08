@@ -1749,6 +1749,17 @@ def get_container_debug_info():
     
     return "\n".join(debug_info)
 
+def download_weight_file():
+    """Download the current weight file if it exists"""
+    import os
+    
+    weight_file = "gasm_weights.pth"
+    if os.path.exists(weight_file):
+        return weight_file
+    else:
+        # Return None if file doesn't exist
+        return None
+
 def create_beautiful_interface():
     """Create a beautiful Gradio interface"""
     
@@ -1994,15 +2005,25 @@ def create_beautiful_interface():
                     lines=15
                 )
         
-        # Container Debug Section
-        with gr.Accordion("🔍 Container Debug Info (Development)", open=False):
-            debug_button = gr.Button("🔍 Get Container Debug Info", variant="secondary")
+        # Container Debug & Weight Download Section
+        with gr.Accordion("🔍 Development Tools (Debug & Download)", open=False):
+            with gr.Row():
+                debug_button = gr.Button("🔍 Get Container Debug Info", variant="secondary")
+                download_button = gr.Button("⬇️ Download Weight File", variant="primary")
+            
             debug_output = gr.Markdown(label="Debug Information")
+            download_file = gr.File(label="Downloaded Weight File", visible=False)
             
             debug_button.click(
                 fn=get_container_debug_info,
                 inputs=[],
                 outputs=debug_output
+            )
+            
+            download_button.click(
+                fn=download_weight_file,
+                inputs=[],
+                outputs=download_file
             )
         
         # Enhanced examples with cutting-edge domains - placed after results
